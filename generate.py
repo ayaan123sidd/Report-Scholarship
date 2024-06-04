@@ -4,6 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import sys
+import requests
 import time
 
 headers = {
@@ -11,8 +12,8 @@ headers = {
     "ORGID": "5735"
 }
 
-student_id = None
-subject = None
+student_id = ''
+subject = ''
 # Attempt jSON
 # file_path = 'C:\\Users\Admin\Desktop\\AI Report Academically\\attemptData.json'  
 if len(sys.argv) > 2:
@@ -137,21 +138,18 @@ print("Pharmaceutics and Therapeutics Marks:", pharmaceutics_and_therapeutics_ma
 # with open('C:\\Users\Admin\\Desktop\\AI Report Academically\\studetails.json') as f:
     # data = json.load(f)
 
-import requests
+
 
 # API endpoint
-url = "http://lms.academically.com/nuSource/api/v1/reports/classprogress"
+url3 = "http://lms.academically.com/nuSource/api/v1/reports/classprogress"
 params = {
-    "class_id": 238659,
+    "class_id": classId,
     "page": 1,
     "per_page": 2000
 }
 
-# Headers with apiKey and ORGID
-
-
 # Send a GET request
-response = requests.get(url, params=params, headers=headers)
+response = requests.get(url3, params=params, headers=headers)
 
 # Check if the request was successful
 if response.status_code == 200:
@@ -175,20 +173,8 @@ users_data = parsed_data['class_report']['users']
 user_marks_data = parsed_data['class_report']['user_marks']
 
 # Studen id here
+# given_student_id = 90278461
 given_student_id = 90547962
-
-
-
-
-# Define the API key and Organization ID in headers
-# headers = {
-#     'apiKey': '90699a1504e98ba0996a9ca1191c2a12',
-#     'ORGID': '5735'
-# }
-
-
-
-
 
 
 # Rank of a user
@@ -393,6 +379,17 @@ time_taken_fig = visualize_time_taken_top_users()
 
 
 # Define a function to calculate time efficiency
+# def time_efficiency(student_id):
+#     marks_data = marks_analysis2(student_id)
+#     if marks_data is None:
+#         return None
+#     marks, total_marks = marks_data
+#     if total_marks == 0:
+#         return None  # or return 0 or any other value as appropriate
+#     time_taken_hours = time_taken_analysis(student_id) / 60
+#     efficiency = (marks / total_marks) * (time_taken_hours) * 100
+#     return efficiency
+
 def time_efficiency(student_id):
     marks_data = marks_analysis2(student_id)
     if marks_data is None:
@@ -400,8 +397,13 @@ def time_efficiency(student_id):
     marks, total_marks = marks_data
     if total_marks == 0:
         return None  # or return 0 or any other value as appropriate
-    time_taken_hours = time_taken_analysis(student_id) / 60
-    efficiency = (marks / total_marks) * (time_taken_hours) * 100
+    
+    # Normalize marks and time taken
+    normalized_marks = marks / 50  # Maximum marks
+    normalized_time_taken = time_taken_analysis(student_id) / 60  # Maximum time taken
+    
+    # Calculate efficiency within 100%
+    efficiency = (normalized_marks + (1 - normalized_time_taken)) * 50
     return efficiency
 
 
@@ -470,7 +472,7 @@ def visualize_marks_top_users():
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-def visualize_accuracy_top_users():
+def visualize_accuracy_top_users1():
     sorted_user_ids = sort_users_by_max_marks()
     accuracy_data = {get_student_name(student_id): accuracy_analysis(student_id) for student_id in sorted_user_ids}
     fig = plt.figure(figsize=(8, 6))
@@ -490,6 +492,34 @@ def visualize_accuracy_top_users():
 
     # Plot for given student
     ax.plot([get_student_name(given_student_id)], [accuracy_analysis(given_student_id)], 'ro', label=f'Candidate: ({get_student_name(given_student_id)})')
+
+    ax.set_title('Accuracy Analysis (Top 10 Users)')
+    ax.set_xlabel('Students')
+    ax.set_ylabel('Accuracy (%)')
+    ax.set_xticks([])
+    ax.legend()
+    return fig
+
+
+def visualize_accuracy_top_users2():
+    sorted_user_ids = sort_users_by_max_marks()
+    accuracy_data = {get_student_name(student_id): accuracy_analysis(student_id) for student_id in sorted_user_ids}
+    fig = plt.figure(figsize=(8, 6))
+    ax = fig.add_subplot(111)
+
+    # Plot data points
+    for student_id in sorted_user_ids:
+        student_name = get_student_name(student_id)
+        if student_id == given_student_id and student_name in accuracy_data:
+            # Plot the given student's data point only if they are in the top 10
+            ax.plot([student_name], [accuracy_data[student_name]], 'ro', label=f'Candidate: ({student_name})')
+        else:
+            ax.plot([student_name], [accuracy_data[student_name]], marker='o', color='skyblue')
+
+    # Plot the line
+    sorted_names = [get_student_name(student_id) for student_id in sorted_user_ids]
+    sorted_values = [accuracy_data[name] for name in sorted_names]
+    ax.plot(sorted_names, sorted_values, linestyle='--', color='grey')  # Dotted line, grey color
 
     ax.set_title('Accuracy Analysis (Top 10 Users)')
     ax.set_xlabel('Students')
@@ -536,7 +566,7 @@ def visualize_student_performance(student_id):
     print("Marks:", marks_analysis(student_id))
     print("Points Percentage:", points_percentage_analysis(student_id))
     print("Time Taken (minutes):", time_taken_analysis(student_id))
-    visualize_accuracy_top_users()
+    # visualize_accuracy_top_users()
     visualize_percent_top_users()
     visualize_marks_top_users()
     visualize_points_percentage_top_users()
@@ -1012,7 +1042,10 @@ from matplotlib.backends.backend_pdf import PdfPages
 with PdfPages('analysis_plots.pdf') as pdf:
     # Plot and save each graph
 
-    fig = visualize_accuracy_top_users()
+    if(find_student_rank(given_student_id)<=10):
+        fig = visualize_accuracy_top_users2()
+    else:
+        fig = visualize_accuracy_top_users1()
     # Add description
     plt.text(0.5, 0.01, "This graph compares the students accuracy analysis against the top 10 users.", ha='center', fontsize=10, transform=fig.transFigure)
     pdf.savefig(fig, bbox_inches='tight',pad_inches=0.6)  # Save the current figure to the PDF with a tight bounding box
@@ -1541,10 +1574,10 @@ def calculate_passing_probability(score):
 strong_areas = f"{max_subject} stands out as the strongest area, with the highest percentage of correct answers ({max_percentage:.1f}%)."
 weak_areas = f"{min_subject} appears to be the weakest area, with a lower percentage of correct answers ({min_percentage:.1f}%) and a higher percentage of incorrect answers."
 # Rank 1
-rank1_accuracy = 90
-rank1_marks = 45
+rank1_accuracy = 99
+rank1_marks = 49
 rank1_time_taken = 25
-rank1_time_efficiency = 70
+rank1_time_efficiency = 90
 
 # Define average data (example data)
 avg_accuracy = average_accuracy()

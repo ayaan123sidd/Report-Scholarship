@@ -156,9 +156,18 @@ app.post('/run-script', (req, res) => {
         res.status(500).send(`Error: ${data}`);
     });
 
+    // pythonProcess.on('close', (code) => {
+    //     if (code === 0) {
+    //         res.send(output);
+    //     } else {
+    //         res.status(500).send(`Process exited with code: ${code}`);
+    //     }
+    // });
+
     pythonProcess.on('close', (code) => {
         if (code === 0) {
-            res.send(output);
+            // Send a signal to the client to initiate PDF download
+            res.status(200).send(`<a href="/download-pdf" download>Download PDF</a>`);
         } else {
             res.status(500).send(`Process exited with code: ${code}`);
         }
@@ -192,12 +201,15 @@ app.post('/run-script', (req, res) => {
 //     });
 // };
 
-
-
-// const student_id = '12345'; 
-// runPythonScript('script.py', [student_id])
-//     .then(output => console.log(output))
-//     .catch(err => console.error(err));
+app.get('/download-pdf', (req, res) => {
+    const file = path.join(__dirname, 'final_report.pdf');
+    res.download(file, (err) => {
+        if (err) {
+            console.error('Error downloading file:', err);
+            res.status(500).send('Error downloading file.');
+        }
+    });
+});
 
     app.listen(PORT, () => {
         console.log(`Server running on port ${PORT}`);

@@ -179,7 +179,8 @@
     <div class="made">
         Made with love from Product Team ❤️
     </div>
-    <button onclick="runPythonScript()">Run Python Script</button>
+    <button  onclick="runPythonScript()">Download PDF</button>
+    <!-- <a href="/download-pdf" download >Download PDF</a> -->
 
     <script>
         document.getElementById('emailForm').addEventListener('submit', function(event) {
@@ -261,17 +262,35 @@
 });
 
 
- function runPythonScript() {
-            fetch('/run-script', {
-                method: 'POST'
-            })
-            .then(response => response.text())
-            .then(data => {
-                console.log(data);
-                alert(data);
-            })
-            .catch(error => console.error('Error:', error));
+function runPythonScript() {
+    // Make an AJAX request to run the Python script
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/run-script', true);
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+            if (xhr.status === 200) {
+                // Script execution successful, initiate PDF download
+                window.location.href = '/download-pdf';
+            } else {
+                // Handle error
+                console.error('Error running Python script:', xhr.responseText);
+                alert('Error running Python script. Please try again later.');
+            }
         }
+    };
+    xhr.send();
+}
+
+
+        // download report
+    // document.getElementById('downloadButton').addEventListener('click', function() {
+    //         const link = document.createElement('a');
+    //         link.href = 'final_report.pdf';
+    //         link.download = 'final_report.pdf';
+    //         document.body.appendChild(link);
+    //         link.click();
+    //         document.body.removeChild(link);
+    //     });
     </script>
 </body>
 </html>
