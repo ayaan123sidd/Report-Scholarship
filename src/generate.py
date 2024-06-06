@@ -73,7 +73,7 @@ pharmaceutics_and_therapeutics_time = time_taken_array[40:]
 # data = json.load(f)
 
 report_service = ReportService(LMS_API_HEADERS)
-class_progress_report_data = report_service.get_class_progress_report(classId)
+class_progress_report_data = report_service.get_class_progress_report(classId) # PER PAGE DATA IS HARDCODED
 users_array_size = len(class_progress_report_data["class_report"]["user_marks"])
 print("Size of the users array:", users_array_size)
 

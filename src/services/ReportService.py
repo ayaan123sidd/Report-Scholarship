@@ -8,7 +8,7 @@ class ReportService:
         self.params = params
 
 
-    def get_class_progress_report(self, class_id, page=1, per_page=2000):
+    def get_class_progress_report(self, class_id, page=1, per_page=2000):   # PAGE & PER PAGE DATA IS HARDCODED
         url = f"{self.base_url}/classprogress"
         default_params = {"class_id": class_id, "page": page, "per_page": per_page}
         params = self.params or default_params
