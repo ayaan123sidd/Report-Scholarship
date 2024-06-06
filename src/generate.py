@@ -1,13 +1,18 @@
-import json
-import requests
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import sys
-import requests
-import time
-
-headers = {"apiKey": "e63cb1851964c2aea0c3a1836cdd4b98", "ORGID": "5735"}
+from services import ExerciseService, ReportService
+from utils.helpers import (
+    generate_front_page,
+    split_label,
+    get_class_and_test_id,
+    process_question_data,
+    calculate_sum_marks,
+    calculate_counts,
+    calculate_passing_probability
+)
+from utils.constants import LMS_API_HEADERS, WKHTMLTOPDF_PATH
 
 student_id = ""
 subject = ""
@@ -17,7 +22,7 @@ if len(sys.argv) > 2:
     e = sys.argv[1]
     f = sys.argv[2]
     print(f"Student ID ee: {e}")
-    print(f"Student ID ee: {f}")
+    print(f"Subject ID ee: {f}")
 
     student_id = e
     subject = f
@@ -25,53 +30,19 @@ if len(sys.argv) > 2:
 else:
     print("No student ID provided.")
 
-
-# Catching the classid and testid from subject
-subject_data = {
-    "kaps": (238659, 74556),
-    "medicos": (262859, 89822),
-    "adc": (272073, 98161),
-    "nclex": (280097, 105398),
-    "usmle": (262232, 91181),
-    "apc": (271165, 97775),
-    "ocanz": (285909, 113240),
-    "psi": (286125, 113417),
-    "sple": (286126, 113418),
-}
-
-
-def get_class_and_test_id(subject):
-    if subject in subject_data:
-        classId, testId = subject_data[subject]
-        return classId, testId
-    else:
-        return None
-
-
 # ********************************************
 classId, testId = get_class_and_test_id(subject)
-# student_id = 90755198
 
-url = f"http://lms.academically.com/nuSource/api/v1//exercises/{testId}/attemptlist?class_id={classId}&user_id={student_id}&is_quiz=false"
+exercie_service = ExerciseService(LMS_API_HEADERS)
 
-# Attempt API API call to get the attempt ID
-response = requests.get(url, headers=headers)
-if response.status_code == 200:
-    data = response.json()
-    if data["code"] == 200 and data["message"] == "Exercise Retrieved":
-        attempt_id = data["exercises"][0]["attempt_id"]
-        print(attempt_id, "attttt")
-        # Second API call using the attempt ID
-        url2 = f"http://lms.academically.com/nuSource/api/v1//exercises/pasttest/{attempt_id}"
-        response2 = requests.get(url2, headers=headers)
+data = exercie_service.get_attempt_data(testId, classId, student_id)
 
-        # Store the response in a variable
-        exercise_data = response2.json()
-        print(exercise_data)
-    else:
-        print("Failed to retrieve exercises")
+if data["code"] == 200 and data["message"] == "Exercise Retrieved":
+    attempt_id = data["exercises"][0]["attempt_id"]
 else:
-    print("Failed to connect to API")
+    raise Exception("Failed to retrieve exercises")
+
+exercise_data = exercie_service.get_exercise_data(attempt_id)
 
 # Read the JSON data from the file
 # with open(file_path, 'r') as file:
@@ -83,32 +54,8 @@ else:
 # Get the questions array
 questions = exercise_data["exercise"]["test_parts"][0]["questions"]
 
-# Initialize an array to store marks
-marks_array = [0] * 50
-time_taken_array = [0] * 50
+marks_array, time_taken_array = process_question_data(questions)
 
-# Iterate through each question
-for i in range(50):
-    if i < len(questions):
-        question = questions[i]
-        if "markedInputs" in question:
-            marked_input = question["markedInputs"][0]
-            if "is_attempted" in marked_input:
-                if marked_input["is_attempted"] == 1:
-                    if "correct" in marked_input:
-                        if marked_input["correct"] == 1:
-                            marks_array[i] = 1  # Correct answer
-                        else:
-                            marks_array[i] = 0  # Incorrect answer
-                else:
-                    marks_array[i] = 2  # Question not attempted
-
-        # Extract time taken per question
-        if "user_question_time" in question:
-            time_taken_array[i] = question["user_question_time"]
-
-print(marks_array)
-print(time_taken_array)
 pharmaceutical_chemistry_marks = marks_array[:10]
 pharmacology_marks = marks_array[10:25]
 physiology_marks = marks_array[25:40]
@@ -120,62 +67,29 @@ pharmacology_time = time_taken_array[10:25]
 physiology_time = time_taken_array[25:40]
 pharmaceutics_and_therapeutics_time = time_taken_array[40:]
 
-# Print the time taken for each topic
-print("Pharmaceutical Chemistry Time:", pharmaceutical_chemistry_time)
-print("Pharmacology Time:", pharmacology_time)
-print("Physiology Time:", physiology_time)
-print("Pharmaceutics and Therapeutics Time:", pharmaceutics_and_therapeutics_time)
-
-# Print the marks for each topic
-print("Pharmaceutical Chemistry Marks:", pharmaceutical_chemistry_marks)
-print("Pharmacology Marks:", pharmacology_marks)
-print("Physiology Marks:", physiology_marks)
-print("Pharmaceutics and Therapeutics Marks:", pharmaceutics_and_therapeutics_marks)
-
-
 # Student wise complete data top 10 comparison
 # Load JSON data
 # with open('C:\\Users\Admin\\Desktop\\AI Report Academically\\studetails.json') as f:
 # data = json.load(f)
 
-
-# API endpoint
-url3 = "http://lms.academically.com/nuSource/api/v1/reports/classprogress"
-params = {"class_id": classId, "page": 1, "per_page": 2000}
-
-# Send a GET request
-response = requests.get(url3, params=params, headers=headers)
-
-# Check if the request was successful
-if response.status_code == 200:
-    # Save the response data in a variable
-    # parsed_data = json.loads(data)
-    parsed_data = response.json()
-    print("Data fetched successfully:")
-    users_array_size = len(parsed_data["class_report"]["user_marks"])
-
-    print("Size of the users array:", users_array_size)
-    print(data)
-else:
-    print("Failed to fetch data. Status code:", response.status_code)
-    print(
-        "Response message:", response.text
-    )  # This will help you understand what went wrong
-
+report_service = ReportService(LMS_API_HEADERS)
+class_progress_report_data = report_service.get_class_progress_report(classId)
+users_array_size = len(class_progress_report_data["class_report"]["user_marks"])
+print("Size of the users array:", users_array_size)
 
 # Extract user data
-users_data = parsed_data["class_report"]["users"]
+users_data = class_progress_report_data["class_report"]["users"]
+print("users_data", users_data)
+users_df = pd.DataFrame(
+    users_data, columns=["student_id", "student_name", "student_username"]
+)
 
 # Extract user marks data
-user_marks_data = parsed_data["class_report"]["user_marks"]
+user_marks_data = class_progress_report_data["class_report"]["user_marks"]
 
 # Studen id here
 # given_student_id = 90278461
-given_student_id = 90547962
-
-
-# Rank of a user
-
+given_student_id = 90547962 # HARDCODED DATA
 
 def rank_students():
     marks_dict = {}  # Dictionary to store students based on their marks
@@ -190,7 +104,7 @@ def rank_students():
 
     ranked_students = []  # List to store (student_id, rank) tuples
 
-    rank = 1
+    rank = 1 # HARDCODED DATA
     for marks in sorted_marks:
         student_ids = marks_dict[marks]
         for student_id in student_ids:
@@ -206,9 +120,6 @@ def find_student_rank(student_id):
         if student == student_id:
             return rank
     return None  # Student ID not found in ranked list
-
-
-# Average scores
 
 
 def average_marks():
@@ -470,7 +381,7 @@ def visualize_time_efficiency_top_users():
     )  # Write value inside the bar
     ax.set_title("Time Efficiency Analysis (Top 10 Users)")
     ax.set_xlabel("Time Efficiency (%)")
-    ax.set_ylabel("students")
+    ax.set_ylabel("Students")
     ax.legend()
     ax.set_yticks([])
     return fig
@@ -534,7 +445,7 @@ def visualize_marks_top_users():
     )  # Write value inside the bar
     ax.set_title("Marks Analysis (Top 10 Users)")
     ax.set_xlabel("Marks Obtained")
-    ax.set_ylabel("top 10 Student")
+    ax.set_ylabel("Top 10 Student")
     ax.legend()
     ax.set_yticks([])
     return fig
@@ -715,11 +626,6 @@ import numpy as np
 
 # Set the style for seaborn plots
 sns.set(style="whitegrid")
-
-
-# Function to calculate the sum of marks for correct answers
-def calculate_sum_marks(marks):
-    return sum(mark for mark in marks if mark == 1)
 
 
 # Calculate sum of marks for each topic
@@ -1026,15 +932,6 @@ topics_bar = np.arange(len(topics))
 
 # Create a PDF file to save the plots
 with PdfPages("assets/pdfs/graphs_summary.pdf") as pdf:
-
-    # Function to split label into two lines after a whitespace
-    def split_label(label):
-        index = label.rfind(" ")
-        if index != -1:
-            return label[:index] + "\n" + label[index + 1 :]
-        else:
-            return label
-
     plt.figure(figsize=(7, 6))
     plt.bar(topics, total_marks_topicwise, color="skyblue", width=0.5)
     plt.title("Topic-wise Total Marks (Correct Answers)")
@@ -1053,14 +950,6 @@ with PdfPages("assets/pdfs/graphs_summary.pdf") as pdf:
     plt.figtext(0.5, 0.06, summary, wrap=True, ha="center", fontsize=8)
     pdf.savefig(pad_inches=(20, 20, 20, 20))  # Adjust page size here
     plt.close()
-
-    # Function to split label into two lines after a whitespace
-    def split_label(label):
-        index = label.rfind(" ")
-        if index != -1:
-            return label[:index] + "\n" + label[index + 1 :]
-        else:
-            return label
 
     plt.figure(figsize=(7, 6))
     plt.bar(topics, average_time_taken_a, color="lightgreen", width=0.5)
@@ -1084,36 +973,19 @@ with PdfPages("assets/pdfs/graphs_summary.pdf") as pdf:
     # Plot Pie Chart for Percentage Correct, Incorrect, and Unattempted Questions
     plt.figure(figsize=(6, 6))  # Keep figure size for better readability
     plt.pie(sizes, colors=colors, autopct="%1.1f%%", startangle=140)
-    plt.title(
-        "Question Response Analysis", fontsize=12, pad=20
-    )  # Adjust the padding and font size of the title
+    plt.title("Question Response Analysis", fontsize=12, pad=20)
     plt.axis("equal")  # Equal aspect ratio ensures that pie is drawn as a circle
     plt.legend(
         loc="upper right", labels=["Correct", "Incorrect", "Unattempted"], fontsize=8
     )
     plt.xlabel("Response Categories", fontsize=10)  # Add x-axis label
     summary = "This pie chart shows the distribution of correct, incorrect, and unattempted questions."
-    plt.figtext(
-        0.5, 0.01, summary, wrap=True, ha="center", fontsize=10
-    )  # Adjust the position and font size of the summary
-    plt.subplots_adjust(
-        left=0.1, right=0.9, top=0.9, bottom=0.1
-    )  # Adjust padding around the plot
-    pdf.savefig(
-        bbox_inches="tight", pad_inches=0.5
-    )  # Save the figure with adjusted padding
+    plt.figtext(0.5, 0.01, summary, wrap=True, ha="center", fontsize=10)
+    plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1)
+    pdf.savefig(bbox_inches="tight", pad_inches=0.5)
     plt.close()
 
     # Plot Total Time Taken per Section
-
-    # Function to split label into two lines after a whitespace
-    def split_label(label):
-        index = label.rfind(" ")
-        if index != -1:
-            return label[:index] + "\n" + label[index + 1 :]
-        else:
-            return label
-
     plt.figure(figsize=(8, 6))
     plt.barh(sections, total_times, color="skyblue", height=0.5)
     plt.title("Total Time Taken per Section")
@@ -1134,14 +1006,6 @@ with PdfPages("assets/pdfs/graphs_summary.pdf") as pdf:
     pdf.savefig(bbox_inches="tight")  # Save the figure
     plt.close()
 
-    # Function to split label into two lines after a whitespace
-    def split_label(label):
-        index = label.rfind(" ")
-        if index != -1:
-            return label[:index] + "\n" + label[index + 1 :]
-        else:
-            return label
-
     plt.figure(figsize=(7, 6))
     bars = plt.bar(topics, percentage_correct_topicwise, color="orange", width=0.5)
     plt.title("Percentage of Correct Answers Topic-wise")
@@ -1161,14 +1025,6 @@ with PdfPages("assets/pdfs/graphs_summary.pdf") as pdf:
     plt.figtext(0.5, 0.06, summary, wrap=True, ha="center", fontsize=8)
     pdf.savefig(pad_inches=(20, 20, 20, 20))  # Adjust page size here
     plt.close()
-
-    # Function to split label into two lines after a whitespace
-    def split_label(label):
-        index = label.rfind(" ")
-        if index != -1:
-            return label[:index] + "\n" + label[index + 1 :]
-        else:
-            return label
 
     # Create a PDF file to save the plots
 
@@ -1208,58 +1064,45 @@ with PdfPages("assets/pdfs/graphs_summary.pdf") as pdf:
     plt.close()
 
 
-pharmaceutical_chemistry_total = len(pharmaceutical_chemistry_marks)
-pharmaceutical_chemistry_correct = pharmaceutical_chemistry_marks.count(1)
-pharmaceutical_chemistry_incorrect = pharmaceutical_chemistry_marks.count(0)
-pharmaceutical_chemistry_unattempted = pharmaceutical_chemistry_marks.count(2)
+(
+    pharmaceutical_chemistry_total,
+    pharmaceutical_chemistry_correct,
+    pharmaceutical_chemistry_incorrect,
+    pharmaceutical_chemistry_unattempted,
+    pharmaceutical_chemistry_correct_percentage,
+    pharmaceutical_chemistry_incorrect_percentage,
+    pharmaceutical_chemistry_unattempted_percentage,
+) = calculate_counts(pharmaceutical_chemistry_marks)
 
-pharmacology_total = len(pharmacology_marks)
-pharmacology_correct = pharmacology_marks.count(1)
-pharmacology_incorrect = pharmacology_marks.count(0)
-pharmacology_unattempted = pharmacology_marks.count(2)
+(
+    pharmacology_total,
+    pharmacology_correct,
+    pharmacology_incorrect,
+    pharmacology_unattempted,
+    pharmacology_correct_percentage,
+    pharmacology_incorrect_percentage,
+    pharmacology_unattempted_percentage,
+) = calculate_counts(pharmacology_marks)
 
-physiology_total = len(physiology_marks)
-physiology_correct = physiology_marks.count(1)
-physiology_incorrect = physiology_marks.count(0)
-physiology_unattempted = physiology_marks.count(2)
+(
+    physiology_total,
+    physiology_correct,
+    physiology_incorrect,
+    physiology_unattempted,
+    physiology_correct_percentage,
+    physiology_incorrect_percentage,
+    physiology_unattempted_percentage,
+) = calculate_counts(physiology_marks)
 
-pharmaceutics_and_therapeutics_total = len(pharmaceutics_and_therapeutics_marks)
-pharmaceutics_and_therapeutics_correct = pharmaceutics_and_therapeutics_marks.count(1)
-pharmaceutics_and_therapeutics_incorrect = pharmaceutics_and_therapeutics_marks.count(0)
-pharmaceutics_and_therapeutics_unattempted = pharmaceutics_and_therapeutics_marks.count(
-    2
-)
-
-# Calculate percentage of correct, incorrect, and unattempted answers for each topic
-pharmaceutical_chemistry_correct_percentage = (
-    pharmaceutical_chemistry_correct / pharmaceutical_chemistry_total
-) * 100
-pharmaceutical_chemistry_incorrect_percentage = (
-    pharmaceutical_chemistry_incorrect / pharmaceutical_chemistry_total
-) * 100
-pharmaceutical_chemistry_unattempted_percentage = (
-    pharmaceutical_chemistry_unattempted / pharmaceutical_chemistry_total
-) * 100
-
-pharmacology_correct_percentage = (pharmacology_correct / pharmacology_total) * 100
-pharmacology_incorrect_percentage = (pharmacology_incorrect / pharmacology_total) * 100
-pharmacology_unattempted_percentage = (
-    pharmacology_unattempted / pharmacology_total
-) * 100
-
-physiology_correct_percentage = (physiology_correct / physiology_total) * 100
-physiology_incorrect_percentage = (physiology_incorrect / physiology_total) * 100
-physiology_unattempted_percentage = (physiology_unattempted / physiology_total) * 100
-
-pharmaceutics_and_therapeutics_correct_percentage = (
-    pharmaceutics_and_therapeutics_correct / pharmaceutics_and_therapeutics_total
-) * 100
-pharmaceutics_and_therapeutics_incorrect_percentage = (
-    pharmaceutics_and_therapeutics_incorrect / pharmaceutics_and_therapeutics_total
-) * 100
-pharmaceutics_and_therapeutics_unattempted_percentage = (
-    pharmaceutics_and_therapeutics_unattempted / pharmaceutics_and_therapeutics_total
-) * 100
+(
+    pharmaceutics_and_therapeutics_total,
+    pharmaceutics_and_therapeutics_correct,
+    pharmaceutics_and_therapeutics_incorrect,
+    pharmaceutics_and_therapeutics_unattempted,
+    pharmaceutics_and_therapeutics_correct_percentage,
+    pharmaceutics_and_therapeutics_incorrect_percentage,
+    pharmaceutics_and_therapeutics_unattempted_percentage,
+) = calculate_counts(pharmaceutics_and_therapeutics_marks)
 
 # Average time taken per question for each topic
 pharmaceutical_chemistry_avg_time = sum(pharmaceutical_chemistry_time) / len(
@@ -1406,11 +1249,9 @@ with PdfPages("assets/pdfs/analysis_plots.pdf") as pdf:
 # PDF generation complete
 print("PDF generated successfully.")
 
-import asyncio
-from pyppeteer import launch
-from PyPDF2 import PdfMerger
 
-# Function to generate the front page HTML dynamically
+import pdfkit
+from PyPDF2 import PdfMerger
 
 options = {
     "margin-top": "0",
@@ -1419,8 +1260,16 @@ options = {
     "margin-right": "0",
 }
 
-
 # max and min subject
+subject_percentages = {
+    "Pharmaceutical Chemistry": pharmaceutical_chemistry_correct_percentage,
+    "Pharmacology": pharmacology_correct_percentage,
+    "Physiology": physiology_correct_percentage,
+    "Pharmaceutics and Therapeutics": pharmaceutics_and_therapeutics_correct_percentage,
+}
+max_subject = max(subject_percentages, key=subject_percentages.get)
+min_subject = min(subject_percentages, key=subject_percentages.get)
+
 max_percentage = max(
     pharmaceutical_chemistry_correct_percentage,
     pharmacology_correct_percentage,
@@ -1428,16 +1277,6 @@ max_percentage = max(
     pharmaceutics_and_therapeutics_correct_percentage,
 )
 
-if max_percentage == pharmaceutical_chemistry_correct_percentage:
-    max_subject = "Pharmaceutical Chemistry"
-elif max_percentage == pharmacology_correct_percentage:
-    max_subject = "Pharmacology"
-elif max_percentage == physiology_correct_percentage:
-    max_subject = "Physiology"
-else:
-    max_subject = "Pharmaceutics and Therapeutics"
-
-# Find the minimum
 min_percentage = min(
     pharmaceutical_chemistry_correct_percentage,
     pharmacology_correct_percentage,
@@ -1445,457 +1284,13 @@ min_percentage = min(
     pharmaceutics_and_therapeutics_correct_percentage,
 )
 
-if min_percentage == pharmaceutical_chemistry_correct_percentage:
-    min_subject = "Pharmaceutical Chemistry"
-elif min_percentage == pharmacology_correct_percentage:
-    min_subject = "Pharmacology"
-elif min_percentage == physiology_correct_percentage:
-    min_subject = "Physiology"
-else:
-    min_subject = "Pharmaceutics and Therapeutics"
-
-
-def generate_front_page(
-    student_name, accuracy, marks, points_percentage, time_taken, time_efficiency2
-):
-
-    if percent > 70:
-        summary_to_display = 0
-    elif 55 < percent <= 70:
-        summary_to_display = 1
-    elif 35 < percent <= 55:
-        summary_to_display = 2
-    else:
-        summary_to_display = 3
-
-    # html css
-
-    html_content = f"""
-   <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Student Report</title>
-        <style>
-            html{{
-              background-color: #f9f9f9;
-              
-            }}
-            body {{
-                font-family: Arial, sans-serif;
-                margin: 0;
-                background-color: #f9f9f9;
-                color: #333;
-            }}
-            table {{
-                width: 80%;
-                border-collapse: collapse;
-                margin:0 auto;
-                margin-bottom: 20px;
-                margin-top:60px;
-            }}
-            th, td {{
-                border: 2px solid #ddd;
-                padding: 8px;
-                text-align: center;
-                font-size:17px;
-            }}
-            th {{
-                background-color: #f2f2f2;
-            }}
-            tr:nth-child(even) {{
-                background-color: #f2f2f2;
-            }}
-            
-            caption {{
-                caption-side: top;
-                font-weight: bold;
-                margin-bottom:20px;
-            }}
-            .container2 {{
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            margin-top:200px;
-            }}
-            .summary2 {{
-            margin-top: 20px;
-            }}
-            .container {{
-                width: 80%;
-                margin: 0 auto;
-                text-align: center;
-                padding-top: 50px;
-                position: relative;
-            }}
-            .header {{
-                margin-bottom: 30px;
-            }}
-            .summary2 h2{{
-                color:#0FB995;
-            }}
-            .logo {{
-                position: absolute;
-                top: 20px;
-                left: -40px;
-                width: 160px; /* Adjust width as needed */
-                height: auto;
-            }}
-             .student-id {{
-                position: absolute;
-                top: 20px;
-                right: -40px;
-                font-size: 16px;
-            }}
-            .report-title {{
-                font-size: 3em;
-                margin-top: 90px;
-                color: #555;
-                border-bottom: 2px solid #555;
-                display: inline-block;
-                padding-bottom: 10px;
-            }}
-            .generative{{
-                font-size:2.5rem;
-                color: #555;
-                border-bottom: 2px solid #555;
-            }}
-            .student-info {{
-                margin-top: 20px;
-                text-align: left;
-                background-color: #fff;
-                padding: 20px;
-                border-radius: 8px;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                font-size:18px;
-            }}
-            .note{{
-                text-align: justify;
-                margin-top:30px;
-                padding: 0px 50px;
-            }}
-            .how{{
-                 text-align: justify;
-                margin-top:30px;
-                padding: 0px 70px;
-                padding-top:20px;
-                font-size:18px;
-                line-height:1.8rem
-            }}
-            .how h1{{
-                color:#0FB995
-            }}
-            .descl{{
-                text-align: justify;
-                margin-top:350px;
-                padding: 0px 70px;
-                color:gray;
-                padding-bottom:50px
-            }}
-            .descl ul{{
-                
-            }}
-            .note p{{
-              font-size:13px
-            }}
-            .summary {{
-                text-align: justify;
-                padding: 20px;
-                background-color: #fff;
-                border-radius: 8px;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                font-size:17px;
-                margin:0 40px;
-                margin-top: 50px;
-            }}
-            .passprob{{
-                text-align: justify;
-                margin-top:50px;
-                padding: 0px 70px;
-                padding-top:50px
-            }}
-            .passprob div{{
-                font-size:18px;
-                line-height:1.8rem;
-            }}
-            .pp{{
-                font-weight:700;
-                font-size:22px;
-                border-bottom:2px solid #103AC5;
-            }}
-            
-            .equal{{
-                font-size:14px
-            }}
-            power{{
-                
-            }}
-            .student-info p {{
-                margin: 10px 0;
-            }}
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <div class="header">
-                <img src="https://academically.com/front/assets/img/logo.svg" alt="Company Logo" class="logo">
-                <span class="student-id">Student ID: 9057732</span>
-                <h1 class="report-title">Report</h1>
-            </div>
-            <div class="student-info">
-                <p><strong>Name: </strong>{student_name}</p>
-                <p><strong>Percentage: </strong> {percent}%</p>
-                <p><strong>Accuracy: </strong> {accuracy}%</p>
-                <p><strong>Marks Obtained (out of 50): </strong> {marks}</p>
-                <p><strong>Time taken: </strong> {minutes} minutes, {seconds} seconds</p>
-                <p><strong>Time Efficiency: </strong> {time_efficiency2}% </p>
-                <p><strong>Rank of Student: </strong> {rank} </p>
-                {'<p class="equal"><em><strong>Note: </strong>Percentage and accuracy are equal because the student attempted all questions.</em></p>' if percent == accuracy else ''}
-            </div>
-            </div>
-           
-
-            <table>
-                <caption><h3>Performance Comparison</h3></caption>
-                <thead>
-                    <tr>
-                        <th></th>
-                        <th>Top performer</th>
-                        <th>{student_name}</th>
-                        <th>Average Score</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Percentage Obtained: (%)</td>
-                        <td>{rank1_accuracy}</td>
-                        <td>{percent}</td>
-                        <td>{avg_percent}</td>
-                    </tr>
-                    <tr>
-                        <td>Marks Obtained</td>
-                        <td>{rank1_marks}</td>
-                        <td>{marks}</td>
-                        <td>{avg_marks}</td>
-                    </tr>
-                    <tr>
-                        <td>Accuracy (%)</td>
-                        <td>{rank1_accuracy}</td>
-                        <td>{accuracy}</td>
-                        <td>{avg_accuracy}</td>
-                    </tr>
-                    
-                    <tr>
-                        <td>Time Taken (minutes)</td>
-                        <td>{rank1_time_taken}</td>
-                        <td>{time_taken:.1f}</td>
-                        <td>{average_time_taken()}</td>
-
-                    </tr>
-                    <tr>
-                        <td>Time Efficiency (%)</td>
-                        <td>{rank1_time_efficiency}</td>
-                        <td>{time_efficiency2}</td>
-                        <td>{avg_time_efficiency}</td>
-                    </tr>
-                </tbody>
-            </table>
-
-             <div class="summary" id="summary0" style="display:{'block' if summary_to_display == 0 else 'none'};">
-                <h3>Student Summary</h3>
-                <ul>
-                <li>
-                <p>The student showcased exceptional proficiency in the online scholarship test with an accuracy rate of <strong>{accuracy}%</strong> This demonstrates a deep understanding of the subject matter and strong problem-solving skills. 
-</p>
-                </li>
-                <li>
-                <p>The time taken to complete the test was <strong>{minutes} minutes & {seconds} seconds</strong>, which highlighted time efficiency. The accuracy rate is higher than average, and the number of questions attempted is considerably high. </p>
-                </li>
-                <li>
-                <p>For better results, the student should focus on better time management strategies for even higher scores. Overall, the student is highly recommended for the scholarship. 
-</p>
-                </li>
-                </ul>
-            </div>
-
-             <div class="summary" id="summary1" style="display:{'block' if summary_to_display == 1 else 'none'};" >
-                <h3>Student Summary1</h3>
-                <ul>
-                <li>
-                <p>The student exhibited commendable performance in the online scholarship test, with an accuracy rate of <strong>{accuracy}%</strong>, showing effort and willingness to engage with the material. While the accuracy rate is below the desired level, the student's commitment to attempting questions is notable.
-</p>
-                </li>
-                <li>
-                <p>The student completed the test in <strong>{minutes} minutes & {seconds} seconds</strong>. The score is modest and indicates areas for improvement, suggesting further study or assistance may be beneficial.
-</p>
-                </li>
-                <li>
-                <p>Seeking additional study resources or assistance can help the student improve their performance. Overall, the student is recommended for the scholarship. 
-</p>
-                </li>
-                </ul>
-            </div>
-
-             <div class="summary" id="summary2" style="display:{'block' if summary_to_display == 2 else 'none'};" >
-                <h3>Student Summary2</h3>
-                <ul>
-                <li>
-                <p>The student achieved an average performance in the online scholarship test with an accuracy rate of <strong>{accuracy}%</strong>, indicating room for improvement in both accuracy and time efficiency. 
-</p>
-                </li>
-                <li>
-                <p>The student completed the test in <strong>{minutes} minutes & {seconds} seconds</strong>. While the effort to attempt questions is acknowledged, the overall score suggests a need for further study and practice to enhance understanding and skills. </p>
-                </li>
-                <li>
-                <p>Unfortunately, according to the time-accuracy assessment model, the overall performance was average. The student should focus on developing a deeper understanding of the test material and improving time management strategies. </p>
-                </li>
-                </ul>
-            </div>
-
-             <div class="summary" id="summary3" style="display:{'block' if summary_to_display == 3 else 'none'};" >
-                <h3>Student Summary3</h3>
-                <ul>
-                <li>
-                <p>The student exhibited below-average performance in the online scholarship test with an accuracy rate of <strong>{accuracy}%</strong>, indicating challenges in both accuracy and time management. 
-</p>
-                </li>
-                <li>
-                <p>The time taken to complete the test was <strong>{minutes} minutes & {seconds} seconds</strong>. While the effort to attempt questions is appreciated, significant improvement is needed in understanding the test material and effectively managing time.</p>
-                </li>
-                <li>
-                <p>Unfortunately, according to the time-accuracy assessment model, the overall performance was below average. The student should prioritise seeking additional support and resources to address the gaps in understanding and time management skills.</p>
-                </li>
-                </ul>
-            </div>
-
-        </div>
-        <div class="container2">
-        <h1 class='generative'>AI-Powered Assessment</h1>
-        <p><em>AI-Generated Comprehensive Test Analysis.</em></p>
-        <div class="summary2">
-            <h2>Pharmaceutical Chemistry:</h2>
-            <p>Average Time per Question: {pharmaceutical_chemistry_avg_time:.1f} seconds</p>
-            <p>Correct Answers: {pharmaceutical_chemistry_correct} out of {pharmaceutical_chemistry_total} ({pharmaceutical_chemistry_correct_percentage:.1f}%)</p>
-            <p>Incorrect Answers: {pharmaceutical_chemistry_incorrect} out of {pharmaceutical_chemistry_total} ({pharmaceutical_chemistry_incorrect_percentage:.1f}%)</p>
-            <p>Unattempted: {pharmaceutical_chemistry_unattempted} out of {pharmaceutical_chemistry_total} ({pharmaceutical_chemistry_unattempted_percentage:.1f}%)</p>
-        </div>
-        <div class="summary2">
-            <h2>Pharmacology Analytics</h2>
-            <p>Average Time per Question: {pharmacology_avg_time:.1f} seconds</p>
-            <p>Correct Answers: {pharmacology_correct} out of {pharmacology_total} ({pharmacology_correct_percentage:.1f}%)</p>
-            <p>Incorrect Answers: {pharmacology_incorrect} out of {pharmacology_total} ({pharmacology_incorrect_percentage:.1f}%)</p>
-            <p>Unattempted: {pharmacology_unattempted} out of {pharmacology_total} ({pharmacology_unattempted_percentage:.1f}%)</p>
-        </div>
-        <div class="summary2">
-            <h2>Physiology Analytics</h2>
-            <p>Average Time per Question: {physiology_avg_time:.1f} seconds</p>
-            <p>Correct Answers: {physiology_correct} out of {physiology_total} ({physiology_correct_percentage:.1f}%)</p>
-            <p>Incorrect Answers: {physiology_incorrect} out of {physiology_total} ({physiology_incorrect_percentage:.1f}%)</p>
-            <p>Unattempted: {physiology_unattempted} out of {physiology_total} ({physiology_unattempted_percentage:.1f}%)</p>
-        </div>
-        <div class="summary2">
-            <h2>Pharmaceutics and Therapeutics Analytics</h2>
-            <p>Average Time per Question: {pharmaceutics_and_therapeutics_avg_time} seconds</p>
-            <p>Correct Answers: {pharmaceutics_and_therapeutics_correct} out of {pharmaceutics_and_therapeutics_total} ({pharmaceutics_and_therapeutics_correct_percentage:.1f}%)</p>
-            <p>Incorrect Answers: {pharmaceutics_and_therapeutics_incorrect} out of {pharmaceutics_and_therapeutics_total} ({pharmaceutics_and_therapeutics_incorrect_percentage:.1f}%)</p>
-            <p>Unattempted: {pharmaceutics_and_therapeutics_unattempted} out of {pharmaceutics_and_therapeutics_total} ({pharmaceutics_and_therapeutics_unattempted_percentage:.1f}%)</p>
-        </div>
-        <div class="summary2">
-            <h2>Strengths and Weaknesses</h2>
-            <p><strong>Strong Areas:</strong> {strong_areas}</p>
-            <p><strong>Weak Areas:</strong> {weak_areas}</p>
-        </div>
-
-    </div>
-    <div class="note">
-                <h4>Note</h4>
-                <ul>
-                <li>
-                <p>Graphs Provided: The report includes various graphs that visualize data related to the student's performance. These graphs represent different metrics such as accuracy, marks obtained, time taken, or other relevant factors.</p>
-                </li>
-                <li>
-                <p>Analysis: The graphs are not just visual representations of data; they are the result of an analysis process. This analysis involves interpreting the student's performance data in comparison to the performance data of other users.</p>
-                </li>
-                <li>
-                <p>Comparison to Top 10 Users: The analysis specifically compares the student's performance to that of the top 10 users. This comparison provides valuable insights into how the student's performance measures up against the top performers in the given context.</p>
-                </li>
-                <li>
-                <p>Purpose: The purpose of this analysis is to evaluate the student's performance relative to a high-performing group. By comparing the student to the top 10 users, the report aims to identify areas of strength and areas for improvement for the student.</p>
-                </li>
-                </ul>
-            </div>
-        </div>
-        
-        
-        <div class="passprob">
-            <h2>Passing Probability</h2>
-            <div>Based on your performance in the scholarship mock test, your estimated probability of passing the actual exam is <span class="pp" >{passing_result}%</span>. While this probability is derived from a detailed analysis of your mock test scores and may not fully reflect your potential, at Academically, we are committed to helping you surpass expectations and realize your aspirations. We'll collaborate closely to enhance your preparation and ensure you're primed for success on exam day.</div>
-        </div>
-
-        <div class="how">
-        <h2>How <span style="color:#103AC5;font-weight:700">Academically</span> Can Help You Succeed:</h2> At<span style="color:#103AC5;font-weight:700"> Academically</span>, we are committed to helping you excel in your exam preparation. We offer a comprehensive suite of resources designed to enhance your learning experience and boost your chances of success. Our offerings include live interactive lectures with experienced instructors frm around the world, a wide range of mock exams to simulate the actual test environment, detailed study handouts that cover all essential topics, and much more. Our goal is to provide you with the tools and support you need to confidently approach your exam and achieve outstanding results. Join us at <span style="color:#103AC5;font-weight:700">Academically</span> and take the next step towards your academic success.
-        </div>
-        
-        <div class="descl">
-            <h4>Disclaimer:</h4>
-            <ul>
-                <li>
-                <p>This report is intended solely for students who participated in the scholarship test. The data and analysis may not be relevant for students who haven't taken the test.</p>
-                </li>
-                <li>
-                <p>The analytics presented in this report are based on the responses and information provided by the test takers themselves. While we strive for accuracy, it's important to understand the data's origin.</p>
-                </li>
-                <li>
-                <p>The "passing probability" reflects your performance in the scholarship test, not necessarily the actual scholarship exam. It's a tool to help you make informed decisions, but it shouldn't be the sole factor.</p>
-                </li>
-                <li>
-                <p>We take steps to ensure the report's accuracy, but discrepancies or errors are always a possibility. We cannot assume responsibility for any such issues.</p>
-                </li>
-                 <li>
-                <p>The provided probabilities are estimates based on test performance, not guarantees of your actual exam results.</p>
-                </li>
-                <li>
-                <p>We recommend that you independently verify any critical information presented in this report. Additionally, consulting with advisors or mentors can provide valuable insights for your scholarship journey.</p>
-                </li>
-                <li>
-                <p>The institution is not liable for any actions you take based on the information in this report. It's your responsibility to use this information alongside other resources and guidance.</p>
-                </li>
-                </ul>
-        </div>
-    </body>
-    </html>
-
-    """
-    return html_content
-
-
-# Passing probability
-def calculate_passing_probability(score):
-    if score > 80:
-        return 0.9 + ((score - 80) / 20) * 0.1
-    elif score >= 50:
-        return 0.7 + ((score - 50) / 30) * 0.2
-    elif score >= 30:
-        return 0.5 + ((score - 30) / 20) * 0.2
-    elif score >= 25:
-        return 0.3 + ((score - 25) / 5) * 0.2
-    elif score >= 10:
-        return 0.1 + ((score - 10) / 15) * 0.2
-    else:
-        return (score / 10) * 0.1
-
-
-# ******************
-
+print("MIN PERCENTAGE", min_percentage)
+print("MAX PERCENTAGE", max_percentage)
 
 # Example student data
 strong_areas = f"{max_subject} stands out as the strongest area, with the highest percentage of correct answers ({max_percentage:.1f}%)."
 weak_areas = f"{min_subject} appears to be the weakest area, with a lower percentage of correct answers ({min_percentage:.1f}%) and a higher percentage of incorrect answers."
-# Rank 1
+# Rank 1   -----   # HARDCODED DATA
 rank1_accuracy = 99
 rank1_marks = 49
 rank1_time_taken = 25
@@ -1926,9 +1321,9 @@ passing_result = f"{passing_probab:.0f}"
 # Extract seconds
 seconds = int((time_taken - minutes) * 60)
 
-perc = marks * 100 / 50
+perc = marks * 100 / 50 # HARDCODED DATA (magic values)
 # time_efficiency2 = time_efficiency(90577321)
-time_efficiencyx = marks * time_taken * 100 / (60 * 50)
+time_efficiencyx = marks * time_taken * 100 / (60 * 50) # HARDCODED DATA (magic values)
 time_efficiency2 = "{:.2f}".format(time_efficiencyx)
 
 # Rank
@@ -1936,33 +1331,67 @@ student_id_to_find = given_student_id  # Example student ID to find rank
 rank = find_student_rank(student_id_to_find)
 
 # Generate front page HTML dynamically
-html_content1 = generate_front_page(
-    student_name, accuracy, marks, points_percentage, time_taken, time_efficiency2
+front_page_args = {
+    "student_name": student_name,
+    "accuracy": accuracy,
+    "marks": marks,
+    "percent": percent,
+    "time_taken": time_taken,
+    "time_efficiency2": time_efficiency2,
+    "minutes": minutes,
+    "seconds": seconds,
+    "rank": rank,
+    "rank1_accuracy": rank1_accuracy,
+    "avg_percent": avg_percent,
+    "rank1_marks": rank1_marks,
+    "avg_marks": avg_marks,
+    "avg_accuracy": avg_accuracy,
+    "rank1_time_taken": rank1_time_taken,
+    "average_time_taken": average_time_taken,
+    "rank1_time_efficiency": rank1_time_efficiency,
+    "avg_time_efficiency": avg_time_efficiency,
+    "pharmaceutical_chemistry_avg_time": pharmaceutical_chemistry_avg_time,
+    "pharmaceutical_chemistry_correct": pharmaceutical_chemistry_correct,
+    "pharmaceutical_chemistry_total": pharmaceutical_chemistry_total,
+    "pharmaceutical_chemistry_correct_percentage": pharmaceutical_chemistry_correct_percentage,
+    "pharmaceutical_chemistry_incorrect": pharmaceutical_chemistry_incorrect,
+    "pharmaceutical_chemistry_incorrect_percentage": pharmaceutical_chemistry_incorrect_percentage,
+    "pharmaceutical_chemistry_unattempted": pharmaceutical_chemistry_unattempted,
+    "pharmaceutical_chemistry_unattempted_percentage": pharmaceutical_chemistry_unattempted_percentage,
+    "pharmacology_avg_time": pharmacology_avg_time,
+    "pharmacology_correct": pharmacology_correct,
+    "pharmacology_total": pharmacology_total,
+    "pharmacology_correct_percentage": pharmacology_correct_percentage,
+    "pharmacology_incorrect": pharmacology_incorrect,
+    "pharmacology_incorrect_percentage": pharmacology_incorrect_percentage,
+    "pharmacology_unattempted": pharmacology_unattempted,
+    "pharmacology_unattempted_percentage": pharmacology_unattempted_percentage,
+    "physiology_avg_time": physiology_avg_time,
+    "physiology_correct": physiology_correct,
+    "physiology_total": physiology_total,
+    "physiology_correct_percentage": physiology_correct_percentage,
+    "physiology_incorrect": physiology_incorrect,
+    "physiology_incorrect_percentage": physiology_incorrect_percentage,
+    "physiology_unattempted": physiology_unattempted,
+    "physiology_unattempted_percentage": physiology_unattempted_percentage,
+    "pharmaceutics_and_therapeutics_avg_time": pharmaceutics_and_therapeutics_avg_time,
+    "pharmaceutics_and_therapeutics_correct": pharmaceutics_and_therapeutics_correct,
+    "pharmaceutics_and_therapeutics_total": pharmaceutics_and_therapeutics_total,
+    "pharmaceutics_and_therapeutics_correct_percentage": pharmaceutics_and_therapeutics_correct_percentage,
+    "pharmaceutics_and_therapeutics_incorrect": pharmaceutics_and_therapeutics_incorrect,
+    "pharmaceutics_and_therapeutics_incorrect_percentage": pharmaceutics_and_therapeutics_incorrect_percentage,
+    "pharmaceutics_and_therapeutics_unattempted": pharmaceutics_and_therapeutics_unattempted,
+    "pharmaceutics_and_therapeutics_unattempted_percentage": pharmaceutics_and_therapeutics_unattempted_percentage,
+    "strong_areas": strong_areas,
+    "weak_areas": weak_areas,
+    "passing_result": passing_result,
+}
+html_content1 = generate_front_page(**front_page_args)
+
+config = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_PATH)
+pdfkit.from_string(
+    html_content1, "assets/pdfs/front_page.pdf", options=options, configuration=config
 )
-
-
-# async def generate_pdf_from_html(html_content, pdf_path):
-#     chromium_path = "/Applications/Brave\ Browser.app/Contents/MacOS/Brave\ Browser"
-#     browser = await launch(executablePath=chromium_path)
-#     page = await browser.newPage()
-
-#     await page.setContent(html_content)
-
-#     await page.pdf({'path': pdf_path, 'format': 'A4'})
-
-#     await browser.close()
-
-
-# Convert HTML to PDF
-# if generate_pdf_from_html(html_content1, pdf_path):
-#     print(f"PDF generated and saved at {pdf_path}")
-# else:
-#     print("PDF generation failed")
-
-# pdf_path = "front_page.pdf"
-# asyncio.run(generate_pdf_from_html(html_content1, pdf_path))
-# pdfkit.from_string(html_content1, 'front_page.pdf', options=options, verbose=True)
-# pdfkit.from_string(html_content, 'front_page.pdf', options={'page-size': 'A4', 'background_color': '#f9f9f9'})
 
 # Merge front page PDF with analysis plots PDF
 merger = PdfMerger()
