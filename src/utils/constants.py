@@ -1,3 +1,9 @@
+'''
+    SUBJECT DATA FORMAT
+
+    KEY: The name of the subject
+    VALUE: Tuple containing the class_id and the test_id
+'''
 SUBJECT_DATA = {
     "kaps": (238659, 74556),
     "medicos": (262859, 89822),
