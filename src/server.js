@@ -18,7 +18,7 @@
         rejectUnauthorized: false 
     });
 
-    const API_KEY='90699a1504e98ba0996a9ca1191c2a12';
+    const API_KEY=process.env.API_KEY;
 
     const app = express();
     const PORT = process.env.PORT || 3000;
@@ -141,37 +141,43 @@
 app.post('/run-script', (req, res) => {
     const student_id = studeId; 
     const subid = sub;
-    const pythonExecutable = 'python'; // or the full path like 'C:\\Python39\\python.exe' on Windows
-    // const scriptPath = path.join(__dirname, 'script.py');
-    const scriptPath = path.join(__dirname, 'generate.py');
-    const pythonProcess = spawn(pythonExecutable, [scriptPath, student_id, subid]);
 
-    let output = '';
-    pythonProcess.stdout.on('data', (data) => {
-        output += data.toString(); 
-    });
+    try {
 
-    pythonProcess.stderr.on('data', (data) => {
-        console.error(`stderr: ${data}`);
-        res.status(500).send(`Error: ${data}`);
-    });
+        const pythonExecutable = process.env.PYTHON_EXECUTABLE_PATH
+        const scriptPath = path.join(__dirname, 'generate.py');
+        const pythonProcess = spawn(pythonExecutable, [scriptPath, student_id, subid]);
 
-    // pythonProcess.on('close', (code) => {
-    //     if (code === 0) {
-    //         res.send(output);
-    //     } else {
-    //         res.status(500).send(`Process exited with code: ${code}`);
-    //     }
-    // });
+        let output = '';
+        pythonProcess.stdout.on('data', (data) => {
+            output += data.toString();
+        });
 
-    pythonProcess.on('close', (code) => {
-        if (code === 0) {
-            // Send a signal to the client to initiate PDF download
-            res.status(200).send(`<a href="/download-pdf" download>Download PDF</a>`);
-        } else {
-            res.status(500).send(`Process exited with code: ${code}`);
-        }
-    });
+        pythonProcess.stderr.on('data', (data) => {
+            console.error(`stderr: ${data}`);
+            res.status(500).send(`Error: ${data}`);
+        });
+
+        // pythonProcess.on('close', (code) => {
+        //     if (code === 0) {
+        //         res.send(output);
+        //     } else {
+        //         res.status(500).send(`Process exited with code: ${code}`);
+        //     }
+        // });
+
+        pythonProcess.on('close', (code) => {
+            if (code === 0) {
+                // Send a signal to the client to initiate PDF download
+                res.status(200).send(`<a href="/download-pdf" download>Download PDF</a>`);
+            } else {
+                res.status(500).send(`Process exited with code: ${code}`);
+            }
+        });
+    } catch (error) {
+        console.error('Error during API call:', error);
+        res.status(500).json({ error: error.message });
+    }
 });
 
 
@@ -202,7 +208,7 @@ app.post('/run-script', (req, res) => {
 // };
 
 app.get('/download-pdf', (req, res) => {
-    const file = path.join(__dirname, 'final_report.pdf');
+    const file = path.join(__dirname, '..', 'assets/pdfs/final_report.pdf');
     res.download(file, (err) => {
         if (err) {
             console.error('Error downloading file:', err);

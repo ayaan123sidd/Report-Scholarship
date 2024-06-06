@@ -791,7 +791,7 @@ topics_bar = np.arange(len(topics))
 
 
 # Create a PDF file to save the plots
-with PdfPages('graphs_summary.pdf') as pdf:
+with PdfPages('assets/pdfs/graphs_summary.pdf') as pdf:
 
 # Function to split label into two lines after a whitespace
     def split_label(label):
@@ -1039,7 +1039,7 @@ pharmaceutics_and_therapeutics_total_count = len(pharmaceutics_and_therapeutics_
 from matplotlib.backends.backend_pdf import PdfPages
 
 # Create a PDF file
-with PdfPages('analysis_plots.pdf') as pdf:
+with PdfPages('assets/pdfs/analysis_plots.pdf') as pdf:
     # Plot and save each graph
 
     if(find_student_rank(given_student_id)<=10):
@@ -1094,7 +1094,8 @@ with PdfPages('analysis_plots.pdf') as pdf:
 # PDF generation complete
 print("PDF generated successfully.")
 
-import pdfkit
+import asyncio
+from pyppeteer import launch
 from PyPDF2 import PdfMerger
 
 # Function to generate the front page HTML dynamically
@@ -1616,19 +1617,39 @@ rank = find_student_rank(student_id_to_find)
 # Generate front page HTML dynamically
 html_content1 = generate_front_page(student_name, accuracy, marks, points_percentage, time_taken, time_efficiency2)
 
+
+# async def generate_pdf_from_html(html_content, pdf_path):
+#     chromium_path = "/Applications/Brave\ Browser.app/Contents/MacOS/Brave\ Browser"
+#     browser = await launch(executablePath=chromium_path)
+#     page = await browser.newPage()
+    
+#     await page.setContent(html_content)
+    
+#     await page.pdf({'path': pdf_path, 'format': 'A4'})
+    
+#     await browser.close()
+
+
 # Convert HTML to PDF
-pdfkit.from_string(html_content1, 'front_page.pdf', options=options)
+# if generate_pdf_from_html(html_content1, pdf_path):
+#     print(f"PDF generated and saved at {pdf_path}")
+# else:
+#     print("PDF generation failed")
+
+# pdf_path = "front_page.pdf"
+# asyncio.run(generate_pdf_from_html(html_content1, pdf_path))
+# pdfkit.from_string(html_content1, 'front_page.pdf', options=options, verbose=True)
 # pdfkit.from_string(html_content, 'front_page.pdf', options={'page-size': 'A4', 'background_color': '#f9f9f9'})
 
 # Merge front page PDF with analysis plots PDF
 merger = PdfMerger()
-merger.append('front_page.pdf')
-merger.append('graphs_summary.pdf')
-merger.append('analysis_plots.pdf')
+merger.append('assets/pdfs/front_page.pdf')
+merger.append('assets/pdfs/graphs_summary.pdf')
+merger.append('assets/pdfs/analysis_plots.pdf')
 
 
 # Save the final report PDF
-merger.write('final_report.pdf')
+merger.write('assets/pdfs/final_report.pdf')
 merger.close()
 
 print("Final report generated successfully.")

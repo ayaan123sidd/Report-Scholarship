@@ -168,7 +168,10 @@
                 <option value="sple">SPLE</option>
             </select>
 
-            <button class="button-50" type="submit">Fetch Marks</button>
+            <div>
+                <button class="button-50" type="submit">Fetch Marks</button>
+                <button class="button-50" onclick="runPythonScript()">Download PDF</button>
+            </div>
         </form>
         <div class="loader" id="loader" style="display: none;"></div>
 
@@ -179,7 +182,6 @@
     <div class="made">
         Made with love from Product Team ❤️
     </div>
-    <button  onclick="runPythonScript()">Download PDF</button>
     <!-- <a href="/download-pdf" download >Download PDF</a> -->
 
     <script>
