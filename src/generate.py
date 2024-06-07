@@ -23,8 +23,6 @@ from utils.constants import LMS_API_HEADERS, WKHTMLTOPDF_PATH
 try:
     student_id = ""
     subject = ""
-    # Attempt jSON
-    # file_path = 'C:\\Users\Admin\Desktop\\AI Report Academically\\attemptData.json'
     if len(sys.argv) > 2:
         e = sys.argv[1]
         f = sys.argv[2]
@@ -34,7 +32,6 @@ try:
     else:
         raise Exception("Student ID is not specified")
 
-    # ********************************************
     classId, testId = get_class_and_test_id(subject)
 
     exercie_service = ExerciseService(LMS_API_HEADERS)
@@ -47,13 +44,6 @@ try:
         raise Exception("Failed to retrieve exercises")
 
     exercise_data = exercie_service.get_exercise_data(attempt_id)
-
-    # Read the JSON data from the file
-    # with open(file_path, 'r') as file:
-    #     json_data = file.read()
-
-    # Parse the JSON data
-    # data = json.loads(json_data)
 
     # Get the questions array
     questions = exercise_data["exercise"]["test_parts"][0]["questions"]
@@ -70,11 +60,6 @@ try:
     pharmacology_time = time_taken_array[10:25]
     physiology_time = time_taken_array[25:40]
     pharmaceutics_and_therapeutics_time = time_taken_array[40:]
-
-    # Student wise complete data top 10 comparison
-    # Load JSON data
-    # with open('C:\\Users\Admin\\Desktop\\AI Report Academically\\studetails.json') as f:
-    # data = json.load(f)
 
     report_service = ReportService(LMS_API_HEADERS)
     class_progress_report_data = report_service.get_class_progress_report(classId) # PER PAGE DATA IS HARDCODED
@@ -110,7 +95,6 @@ try:
             for student_id in student_ids:
                 ranked_students.append((student_id, rank))
             rank += len(student_ids)
-        print("Length of marks_dict:", len(marks_dict))
         return ranked_students
 
 
@@ -199,7 +183,6 @@ try:
             for student_id in student_ids:
                 ranked_students.append((student_id, rank))
             rank += len(student_ids)
-        print("Length of marks_dict:", len(marks_dict))
         return ranked_students
 
 
@@ -310,21 +293,6 @@ try:
 
     # Call the function to get the figure object
     time_taken_fig = visualize_time_taken_top_users()
-    # plt.show()
-
-
-    # Define a function to calculate time efficiency
-    # def time_efficiency(student_id):
-    #     marks_data = marks_analysis2(student_id)
-    #     if marks_data is None:
-    #         return None
-    #     marks, total_marks = marks_data
-    #     if total_marks == 0:
-    #         return None  # or return 0 or any other value as appropriate
-    #     time_taken_hours = time_taken_analysis(student_id) / 60
-    #     efficiency = (marks / total_marks) * (time_taken_hours) * 100
-    #     return efficiency
-
 
     def time_efficiency(student_id):
         marks_data = marks_analysis2(student_id)
@@ -572,30 +540,12 @@ try:
 
     # Define a function to visualize performance for a given student ID
     def visualize_student_performance(student_id):
-        student_name = get_student_name(student_id)
-        print("Overall Summary for Student", student_id, ":", student_name)
-        print("Accuracy:", accuracy_analysis(student_id))
-        print("Marks:", marks_analysis(student_id))
-        print("Points Percentage:", points_percentage_analysis(student_id))
-        print("Time Taken (minutes):", time_taken_analysis(student_id))
         # visualize_accuracy_top_users()
         visualize_percent_top_users()
         visualize_marks_top_users()
         visualize_points_percentage_top_users()
         visualize_time_taken_top_users()
         visualize_time_efficiency_top_users()
-        # Plot performance for the given student ID
-        # plt.figure(figsize=(10, 6))
-        # plt.plot(['Accuracy'], [accuracy_analysis(student_id)], marker='o', label='Accuracy')
-        # plt.plot(['Marks'], [marks_analysis(student_id)], marker='o', label='Marks')
-        # plt.plot(['Points Percentage'], [points_percentage_analysis(student_id)], marker='o', label='Points Percentage')
-        # plt.plot(['Time Taken'], [time_taken_analysis(student_id)], marker='o', label='Time Taken (minutes)')
-        # plt.title('Performance Analysis for Student ID: ' + str(student_id))
-        # plt.xlabel('Metrics')
-        # plt.ylabel('Values')
-        # plt.legend()
-        # plt.xticks(rotation=45)
-
 
     # Call the function to visualize performance for the given student ID
     visualize_student_performance(given_student_id)
@@ -626,14 +576,6 @@ try:
         sum_marks_pharmaceutics_and_therapeutics,
     ]
 
-    # plt.figure(figsize=(10, 6))
-    # plt.bar(topics, sum_marks, color='skyblue')
-    # plt.title('Sum of Marks for Correct Answers per Topic')
-    # plt.xlabel('Topics')
-    # plt.ylabel('Sum of Marks')
-    # plt.xticks(rotation=45)
-    # plt.show()
-
     # Pie chart for percentage of correct, incorrect, and unattempted questions per topic
     correct_counts = [
         pharmaceutical_chemistry_marks.count(1),
@@ -654,8 +596,6 @@ try:
         pharmaceutics_and_therapeutics_marks.count(2),
     ]
 
-    # plt.figure(figsize=(12, 6))
-    # plt.subplot(1, 2, 1)
     plt.pie(
         correct_counts,
         labels=topics,
@@ -671,9 +611,6 @@ try:
         autopct="%1.1f%%",
         colors=["lightcoral", "lightgreen", "lightblue", "lightyellow"],
     )
-    # plt.title('Percentage of Incorrect Answers')
-
-    # plt.show()
 
     topic_marks = [
         pharmaceutical_chemistry_marks,
@@ -681,7 +618,6 @@ try:
         physiology_marks,
         pharmaceutics_and_therapeutics_marks,
     ]
-
 
     # Calculate total marks for each topic based on correct answers (array element is 1)
     total_marks_topicwise = [
@@ -694,18 +630,6 @@ try:
         ]
     ]
 
-    # Plot Topic-wise Total Marks
-    # plt.figure(figsize=(7, 6))
-    # plt.bar(topics, total_marks_topicwise, color='skyblue', width=0.5)
-    # plt.title('Topic-wise Total Marks (Correct Answers)')
-    # plt.xlabel('Topics')
-    # plt.ylabel('Total Correct Answers')
-    # plt.xticks(rotation=0, ha='center', fontsize=8)
-    # plt.grid(axis='y', linestyle='--', alpha=0.7)
-    # plt.tight_layout()
-    # plt.show()
-
-
     # Calculate average time taken for each topic
     average_time_taken_a = [
         np.mean(pharmaceutical_chemistry_time),
@@ -713,17 +637,6 @@ try:
         np.mean(physiology_time),
         np.mean(pharmaceutics_and_therapeutics_time),
     ]
-
-    # Plot Topic-wise Average Time Taken
-    # plt.figure(figsize=(7, 6))
-    # plt.bar(topics, average_time_taken_a, color='lightgreen', width=0.5)
-    # plt.title('Topic-wise Average Time Taken per question')
-    # plt.xlabel('Topics')
-    # plt.ylabel('Average Time Taken (seconds)')
-    # plt.xticks(rotation=0, ha='center', fontsize=8)
-    # plt.grid(axis='y', linestyle='--', alpha=0.7)
-    # plt.tight_layout()
-    # plt.show()
 
     # Calculate percentages of correct, incorrect, and unattempted questions
     total_questions = len(marks_array)
@@ -741,12 +654,6 @@ try:
     # labels = ['Correct', 'Incorrect', 'Unattempted']
     sizes = [percent_correct, percent_incorrect, percent_unattempted]
     colors = ["lightcoral", "lightskyblue", "lightgreen"]
-
-    # plt.figure(figsize=(4, 4))
-    # plt.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=140)
-    # plt.title('Percentage of Correct, Incorrect, and Unattempted Questions')
-    # plt.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle
-    # plt.show()
 
     # Calculate total time taken per section
     total_time_pharmaceutical_chemistry = sum(pharmaceutical_chemistry_time) / 60
@@ -769,16 +676,6 @@ try:
         total_time_physiology,
         total_time_pharmaceutics_and_therapeutics,
     ]
-
-    # Plot total time taken per section with inverted bars
-    # plt.figure(figsize=(8,6))
-    # plt.barh(sections, total_times, color='skyblue',height=0.5)
-    # plt.title('Total Time Taken per Section')
-    # plt.xlabel('Total Time Taken (minutes)')
-    # plt.ylabel('Sections')
-    # plt.grid(axis='x', linestyle='--', alpha=0.7)
-    # plt.tight_layout(pad=2)
-    # plt.show()
 
 
     # Calculate the percentage of correct answers for each topic
@@ -807,37 +704,12 @@ try:
         )
     ]
 
-    # Plot Percentage of Correct Answers Topic-wise
-    # plt.figure(figsize=(7, 6))
-    # bars = plt.bar(topics, percentage_correct_topicwise, color='orange',width=0.5)
-    # plt.title('Percentage of Correct Answers Topic-wise')
-    # plt.xlabel('Topics')
-    # plt.ylabel('Percentage of Correct Answers')
-
 
     def percentage_formatter(x, pos):
         return "{:.0f}%".format(x)
 
 
     plt.gca().yaxis.set_major_formatter(FuncFormatter(percentage_formatter))
-
-
-    # for bar in bars:
-    #     height = bar.get_height()
-    #     plt.text(bar.get_x() + bar.get_width() / 2, height + 1, '', ha='center', va='bottom')
-
-    # plt.xticks(rotation=0, ha='center', fontsize=8)
-    # for tick in plt.gca().get_xticklabels():
-    #     words = tick.get_text().split()  # Split label text into words
-    #     if len(words) > 1:
-    #         tick.set_linespacing(1)  # Adjust spacing between lines
-    #         tick.set_text('\n'.join(words))  # Set label text with newline character
-
-    # plt.ylim(0, 100)
-    # plt.grid(axis='y', linestyle='--', alpha=0.7)
-    # plt.tight_layout()
-    # plt.show()
-
 
     # Percentage
     total_questions_per_topic = [
@@ -883,28 +755,8 @@ try:
     ]
 
     # Plot Percentage of Correct and Incorrect Answers Topic-wise
-    # plt.figure(figsize=(7, 6))
     bar_width = 0.35
     topics_bar = np.arange(len(topics))
-    # bars1 = plt.bar(topics_bar - bar_width/2, percentage_correct_topicwise, bar_width, color='orange', label='Correct')
-    # bars2 = plt.bar(topics_bar + bar_width/2, percentage_incorrect_topicwise, bar_width, color='lightcoral', label='Incorrect')
-    # plt.title('Percentage of Correct Vs Incorrect Answers Topic-wise')
-    # plt.xlabel('Topics')
-    # plt.ylabel('Percentage of Answers')
-    # plt.xticks(topics_bar, topics, rotation=0, ha='center', fontsize=8)
-
-    # # Function to format y-axis labels with '%'
-    # def percentage_formatter(x, pos):
-    #     return '{:.0f}%'.format(x)
-
-    # plt.gca().yaxis.set_major_formatter(FuncFormatter(percentage_formatter))
-
-    # plt.legend()
-    # plt.ylim(0, 100)
-    # plt.grid(axis='y', linestyle='--', alpha=0.7)
-    # plt.tight_layout()
-    # plt.show()
-
 
     # Create a PDF file to save the plots
     with PdfPages("assets/pdfs/graphs_summary.pdf") as pdf:
@@ -1175,12 +1027,6 @@ try:
         )
         pdf.savefig(fig, bbox_inches="tight", pad_inches=0.6)
         plt.close(fig)
-
-        # fig = visualize_points_percentage_top_users()
-        # # Add description
-        # plt.text(0.5, 0.01, "This graph illustrates the points percentage analysis of the top 10 users.", ha='center', fontsize=10, transform=fig.transFigure)
-        # pdf.savefig(fig, bbox_inches='tight',pad_inches=0.6)
-        # plt.close(fig)
         fig = visualize_time_taken_top_users()
         # Add description
         plt.text(
@@ -1263,9 +1109,7 @@ try:
     avg_accuracy = average_accuracy()
     avg_marks = average_marks()
     avg_percent = average_percent()
-    # avg_time_taken = average_time_taken()
     avg_time_efficiency = average_time_efficiency()
-    # avg_tt = average_time_taken()
 
     student_name = get_student_name(given_student_id)
     accuracy = accuracy_analysis(given_student_id)
