@@ -144,9 +144,7 @@ function processQueue() {
       lock = false;
       processQueue();
       if (code === 0) {
-        res
-          .status(200)
-          .send(`<a href="/download-pdf" download>Download PDF</a>`);
+        downloadFinalReport(res);
       } else {
         res.status(500).send(`Process exited with code: ${code}`);
       }
@@ -159,7 +157,7 @@ function processQueue() {
   }
 }
 
-app.get("/download-pdf", (req, res) => {
+const downloadFinalReport = (res) => {
   const file = path.join(__dirname, "..", "assets/pdfs/final_report.pdf");
   res.download(file, (err) => {
     if (err) {
@@ -167,7 +165,7 @@ app.get("/download-pdf", (req, res) => {
       res.status(500).send("Error downloading file.");
     }
   });
-});
+}
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
