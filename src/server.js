@@ -64,8 +64,6 @@ app.get("/studentDetails", async (req, res) => {
     const studentData = await studentResponse.json();
     console.log("Student API data:", studentData);
 
-    studeId = studentData.user_details[0].student_id;
-
     const marksApiUrl = `https://lms.academically.com/nuSource/api/v1/exercises/${testId}/attemptlist?class_id=${classId}&user_id=${studentData.user_details[0].student_id}&is_quiz=false`;
     const marksResponse = await fetch(marksApiUrl, {
       method: "GET",
@@ -103,18 +101,16 @@ app.get("/", (req, res) => {
 });
 
 // python route
-
 app.post("/run-script", (req, res) => {
-  const student_id = studeId;
-  const subid = sub;
+  const { studentId, subject } = req.body;
 
   try {
     const pythonExecutable = process.env.PYTHON_EXECUTABLE_PATH;
     const scriptPath = path.join(__dirname, "generate.py");
     const pythonProcess = spawn(pythonExecutable, [
       scriptPath,
-      student_id,
-      subid,
+      studentId,
+      subject,
     ]);
 
     let output = "";
@@ -126,14 +122,6 @@ app.post("/run-script", (req, res) => {
       console.error(`stderr: ${data}`);
       res.status(500).send(`Error: ${data}`);
     });
-
-    // pythonProcess.on('close', (code) => {
-    //     if (code === 0) {
-    //         res.send(output);
-    //     } else {
-    //         res.status(500).send(`Process exited with code: ${code}`);
-    //     }
-    // });
 
     pythonProcess.on("close", (code) => {
       if (code === 0) {
