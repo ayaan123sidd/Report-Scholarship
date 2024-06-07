@@ -197,6 +197,7 @@
     <!-- <a href="/download-pdf" download >Download PDF</a> -->
 
     <script>
+      const BASE_URL = "http://localhost:3000";
       document
         .getElementById("emailForm")
         .addEventListener("submit", function (event) {
@@ -215,9 +216,7 @@
 
           console.log(window.location.hostname);
           // Using the new server endpoint to fetch student details and marks
-          fetch(
-            `http://localhost:3000/studentDetails?email=${email}&subject=${subject}`
-          )
+          fetch(`${BASE_URL}/studentDetails?email=${email}&subject=${subject}`)
             .then((response) => {
               if (!response.ok) {
                 throw new Error(`HTTP status ${response.status}`);
@@ -232,14 +231,17 @@
               if (data.userDetails && data.userDetails.length > 0) {
                 const userDetails = data.userDetails[0];
                 document.getElementById("userDetails").innerHTML = `
-            <h2 style="color: #0FB995;">User Details</h2>
-                <p><strong>Student Name:</strong> ${userDetails.student_name}</p>
-                <p><strong>Student Email:</strong> ${userDetails.student_email}</p>
-                <p><strong>Student Mobile Number:</strong> ${userDetails.student_mobile_number}</p>
-            `;
+                  <h2 style="color: #0FB995;">User Details</h2>
+                  <p id="studentName"><strong>Student Name:</strong> ${userDetails.student_name}</p>
+                  <p><strong>Student Email:</strong> ${userDetails.student_email}</p>
+                  <p><strong>Student Mobile Number:</strong> ${userDetails.student_mobile_number}</p>
+                  <input type="hidden" id="studentId" name="student_id" value="${userDetails.student_id}">
+              `;
               } else {
-                document.getElementById("userDetails").innerHTML =
-                  "<p>No user details found.</p>";
+                document.getElementById("userDetails").innerHTML = `
+                  <p>No user details found.</p>
+                  <input type="hidden" id="studentId" name="student_id" value="">
+                `;
               }
 
               // Check for user marks and display them
@@ -288,24 +290,38 @@
             });
         });
 
-      function runPythonScript() {
-        // Make an AJAX request to run the Python script
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", "/run-script", true);
-        xhr.onreadystatechange = function () {
-          if (xhr.readyState === XMLHttpRequest.DONE) {
-            if (xhr.status === 200) {
+        function runPythonScript() {
+          const studentId = document.getElementById("studentId").value;
+          const subject = document.getElementById("subject").value;
+
+          const payload = {
+            studentId: studentId,
+            subject
+          };
+          console.log({payload})
+
+          fetch("/run-script", {
+            method: "POST",
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+          })
+          .then(response => {
+            if (response.ok) {
               // Script execution successful, initiate PDF download
               window.location.href = "/download-pdf";
             } else {
-              // Handle error
-              console.error("Error running Python script:", xhr.responseText);
-              alert("Error running Python script. Please try again later.");
+              return response.text().then(text => { throw new Error(text) });
             }
-          }
-        };
-        xhr.send();
-      }
+          })
+          .catch(error => {
+            // Handle error
+            console.error("Error running Python script:", error);
+            alert("Error running Python script. Please try again later.");
+          });
+        }
+
 
       // download report
       // document.getElementById('downloadButton').addEventListener('click', function() {
