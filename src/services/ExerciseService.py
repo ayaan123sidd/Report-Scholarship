@@ -8,12 +8,10 @@ class ExerciseService:
 
 
     def get_attempt_data(self, test_id, class_id, student_id):
-        print(test_id, class_id, student_id, self.base_url, self.headers)
         url = f"{self.base_url}/{test_id}/attemptlist?class_id={class_id}&user_id={student_id}&is_quiz=false"
         response = requests.get(url, headers=self.headers)
 
         if response.status_code != 200:
-            print("Failed to connect to the API while getting attempt data.")
             raise Exception("Failed to connect to the API while getting attempt data.")
         
         return response.json()
@@ -24,7 +22,6 @@ class ExerciseService:
         response = requests.get(url, headers=self.headers)
 
         if response.status_code != 200:
-            print("Failed to connect to the API while getting exercise data.")
             raise Exception("Failed to connect to the API while getting exercise data.")
         
         return response.json()

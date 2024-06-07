@@ -2,6 +2,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import sys
+from matplotlib.ticker import FuncFormatter
+from matplotlib.backends.backend_pdf import PdfPages
+import numpy as np
+import pdfkit
+from PyPDF2 import PdfMerger
 from services import ExerciseService, ReportService
 from utils.helpers import (
     generate_front_page,
@@ -23,14 +28,11 @@ try:
     if len(sys.argv) > 2:
         e = sys.argv[1]
         f = sys.argv[2]
-        print(f"Student ID ee: {e}")
-        print(f"Subject ID ee: {f}")
 
         student_id = e
         subject = f
-        print(f"Student ID: {student_id}")
     else:
-        print("No student ID provided.")
+        raise Exception("Student ID is not specified")
 
     # ********************************************
     classId, testId = get_class_and_test_id(subject)
@@ -77,11 +79,9 @@ try:
     report_service = ReportService(LMS_API_HEADERS)
     class_progress_report_data = report_service.get_class_progress_report(classId) # PER PAGE DATA IS HARDCODED
     users_array_size = len(class_progress_report_data["class_report"]["user_marks"])
-    print("Size of the users array:", users_array_size)
 
     # Extract user data
     users_data = class_progress_report_data["class_report"]["users"]
-    print("users_data", users_data)
     users_df = pd.DataFrame(
         users_data, columns=["student_id", "student_name", "student_username"]
     )
@@ -119,7 +119,7 @@ try:
         for student, rank in ranked_students:
             if student == student_id:
                 return rank
-        return None  # Student ID not found in ranked list
+        raise Exception("Student ID not found in ranked list")
 
 
     def average_marks():
@@ -276,18 +276,12 @@ try:
 
 
     # Define a function to visualize time taken for top users using seaborn
-
-    from matplotlib.figure import Figure
-
-
     def visualize_time_taken_top_users():
         sorted_user_ids = sort_users_by_time_taken()
-        print("sorted_user_ids", sorted_user_ids)
         time_data = {
             get_student_name(student_id): time_taken_analysis(student_id)
             for student_id in sorted_user_ids
         }
-        print("student_id", student_id, time_data)
         fig = plt.figure(figsize=(8, 6))
         ax = fig.add_subplot(111)
 
@@ -295,7 +289,6 @@ try:
         reversed_data = list(time_data.values())[::-1]
         reversed_names = list(time_data.keys())[::-1]
 
-        # Plot for given student
         ax.plot(
             [get_student_name(given_student_id)],
             [time_taken_analysis(given_student_id)],
@@ -308,7 +301,7 @@ try:
         ax.set_title("Time Taken Analysis (Top 10 Users)")
         ax.set_xlabel("Students")
         ax.set_ylabel("Time Taken (minutes)")
-        ax.set_xticks(range(len(time_data)))  # Set tick positions
+        ax.set_xticks(range(len(time_data)))
         # ax.set_xticklabels(reversed_names, rotation=45)
         ax.set_xticks([])
         ax.legend()
@@ -318,9 +311,6 @@ try:
     # Call the function to get the figure object
     time_taken_fig = visualize_time_taken_top_users()
     # plt.show()
-
-
-    # Define a function to sort users by time taken
 
 
     # Define a function to calculate time efficiency
@@ -451,10 +441,6 @@ try:
         ax.legend()
         ax.set_yticks([])
         return fig
-
-
-    import matplotlib.pyplot as plt
-    import seaborn as sns
 
 
     def visualize_accuracy_top_users1():
@@ -614,12 +600,6 @@ try:
     # Call the function to visualize performance for the given student ID
     visualize_student_performance(given_student_id)
 
-
-    import matplotlib.pyplot as plt
-    from matplotlib.ticker import FuncFormatter
-    from matplotlib.backends.backend_pdf import PdfPages
-    import seaborn as sns
-    import numpy as np
 
     # Set the style for seaborn plots
     sns.set(style="whitegrid")
@@ -1147,12 +1127,9 @@ try:
     physiology_total_count = len(physiology_marks)
     pharmaceutics_and_therapeutics_total_count = len(pharmaceutics_and_therapeutics_marks)
 
-    from matplotlib.backends.backend_pdf import PdfPages
 
     # Create a PDF file
     with PdfPages("assets/pdfs/analysis_plots.pdf") as pdf:
-        # Plot and save each graph
-
         if find_student_rank(given_student_id) <= 10:
             fig = visualize_accuracy_top_users2()
         else:
@@ -1204,11 +1181,7 @@ try:
         # plt.text(0.5, 0.01, "This graph illustrates the points percentage analysis of the top 10 users.", ha='center', fontsize=10, transform=fig.transFigure)
         # pdf.savefig(fig, bbox_inches='tight',pad_inches=0.6)
         # plt.close(fig)
-        try:
-            fig = visualize_time_taken_top_users()
-        except Exception as e:
-            print("getting error on the method")
-            print(e)
+        fig = visualize_time_taken_top_users()
         # Add description
         plt.text(
             0.5,
@@ -1245,12 +1218,6 @@ try:
             720,
         )  # 10x10 inches in points (1 inch = 72 points)
 
-    # PDF generation complete
-    print("PDF generated successfully.")
-
-
-    import pdfkit
-    from PyPDF2 import PdfMerger
 
     options = {
         "margin-top": "0",
