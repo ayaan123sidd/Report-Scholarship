@@ -100,8 +100,23 @@ app.get("/", (req, res) => {
   res.send(indexContent);
 });
 
-// python route
+
+let lock = false;
+const queue = [];
+
 app.post("/run-script", (req, res) => {
+  queue.push({ req, res });
+  processQueue();
+});
+
+
+function processQueue() {
+  if (lock || queue.length === 0) {
+    return;
+  }
+
+  lock = true;
+  const { req, res } = queue.shift();
   const { studentId, subject } = req.body;
 
   try {
@@ -121,11 +136,14 @@ app.post("/run-script", (req, res) => {
     pythonProcess.stderr.on("data", (data) => {
       console.error(`stderr: ${data}`);
       res.status(500).send(`Error: ${data}`);
+      lock = false;
+      processQueue();
     });
 
     pythonProcess.on("close", (code) => {
+      lock = false;
+      processQueue();
       if (code === 0) {
-        // Send a signal to the client to initiate PDF download
         res
           .status(200)
           .send(`<a href="/download-pdf" download>Download PDF</a>`);
@@ -136,34 +154,10 @@ app.post("/run-script", (req, res) => {
   } catch (error) {
     console.error("Error during API call:", error);
     res.status(500).json({ error: error.message });
+    lock = false;
+    processQueue();
   }
-});
-
-// python
-
-// const runPythonScript = (scriptPath, args = []) => {
-//     return new Promise((resolve, reject) => {
-//         const pythonExecutable = 'python'; // or the full path like 'C:\\Python39\\python.exe' on Windows
-//         const pythonProcess = spawn(pythonExecutable, [scriptPath, ...args]);
-
-//         let output = '';
-//         pythonProcess.stdout.on('data', (data) => {
-//             output += data.toString();
-//         });
-
-//         pythonProcess.stderr.on('data', (data) => {
-//             reject(`stderr: ${data}`);
-//         });
-
-//         pythonProcess.on('close', (code) => {
-//             if (code === 0) {
-//                 resolve(output);
-//             } else {
-//                 reject(`Process exited with code: ${code}`);
-//             }
-//         });
-//     });
-// };
+}
 
 app.get("/download-pdf", (req, res) => {
   const file = path.join(__dirname, "..", "assets/pdfs/final_report.pdf");
