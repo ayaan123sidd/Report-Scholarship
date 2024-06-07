@@ -286,48 +286,48 @@
             });
         });
 
-        function runPythonScript() {
-          const studentId = document.getElementById("studentId").value;
-          const subject = document.getElementById("subject").value;
+      function runPythonScript() {
+        const studentIdElm = document.getElementById("studentId");
+        const subjectElm = document.getElementById("subject");
 
-          const payload = {
-            studentId: studentId,
-            subject
-          };
-          console.log({payload})
+        if (!studentIdElm || !subjectElm) {
+          alert("Please fetch student marks first.");
+          return;
+        }
 
-          fetch("/run-script", {
-            method: "POST",
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-          })
-          .then(response => {
-            if (response.ok) {
-              // Script execution successful, initiate PDF download
-              window.location.href = "/download-pdf";
-            } else {
-              return response.text().then(text => { throw new Error(text) });
+        const payload = {
+          studentId: studentIdElm.value,
+          subject: subjectElm.value,
+        };
+
+        fetch("/run-script", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Could not run Python script.");
             }
+            return response.blob();
           })
-          .catch(error => {
+          .then((blob) => {
+            const url = window.URL.createObjectURL(new Blob([blob]));
+            const link = document.createElement("a");
+            link.href = url;
+            link.setAttribute("download", "report.pdf");
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode.removeChild(link);
+          })
+          .catch((error) => {
             // Handle error
             console.error("Error running Python script:", error);
             alert("Error running Python script. Please try again later.");
           });
-        }
-
-
-      // download report
-      // document.getElementById('downloadButton').addEventListener('click', function() {
-      //         const link = document.createElement('a');
-      //         link.href = 'final_report.pdf';
-      //         link.download = 'final_report.pdf';
-      //         document.body.appendChild(link);
-      //         link.click();
-      //         document.body.removeChild(link);
-      //     });
+      }
     </script>
   </body>
 </html>
