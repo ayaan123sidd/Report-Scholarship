@@ -8,9 +8,7 @@ import path from "path";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 import { spawn } from "child_process";
-
-let studeId = "";
-let sub = "";
+import { SUBJECT_DATA } from "./utils/constants.js";
 
 dotenv.config();
 
@@ -34,52 +32,17 @@ app.use(express.json());
 
 app.get("/studentDetails", async (req, res) => {
   const { email, subject } = req.query;
-  sub = subject;
   console.log("Received email:", email);
   console.log("Received subject:", subject);
 
   try {
     // Dynamic subject handling
     let classId, testId;
-    switch (subject) {
-      case "kaps":
-        classId = 238659;
-        testId = 74556;
-        break;
-      case "medicos":
-        classId = 262859;
-        testId = 89822;
-        break;
-      case "adc":
-        classId = 272073;
-        testId = 98161;
-        break;
-      case "nclex":
-        classId = 280097;
-        testId = 105398;
-        break;
-      case "usmle":
-        classId = 262232;
-        testId = 91181;
-        break;
-      case "apc":
-        classId = 271165;
-        testId = 97775;
-        break;
-      case "ocanz":
-        classId = 285909;
-        testId = 113240;
-        break;
-      case "psi":
-        classId = 286125;
-        testId = 113417;
-        break;
-      case "sple":
-        classId = 286126;
-        testId = 113418;
-        break;
-      default:
-        return res.status(400).json({ error: "Invalid subject selected" });
+    const subjectData = SUBJECT_DATA[subject];
+    if (subjectData) {
+      [classId, testId] = subjectData;
+    } else {
+      return res.status(400).json({ message: `Subject not found: ${subject}` });
     }
 
     const studentApiUrl = `https://lms.academically.com/nuSource/api/v1/student/search?institution_id=4502&student_email=${email}`;
