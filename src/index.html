@@ -194,10 +194,8 @@
       <div id="error"></div>
     </div>
     <div class="made">Made with love from Product Team ❤️</div>
-    <!-- <a href="/download-pdf" download >Download PDF</a> -->
 
     <script>
-      const BASE_URL = "http://localhost:3000";
       document
         .getElementById("emailForm")
         .addEventListener("submit", function (event) {
@@ -214,9 +212,8 @@
 
           loader.style.display = "block";
 
-          console.log(window.location.hostname);
-          // Using the new server endpoint to fetch student details and marks
-          fetch(`${BASE_URL}/studentDetails?email=${email}&subject=${subject}`)
+          // Using the endpoint to fetch the student details and marks
+          fetch(`/studentDetails?email=${email}&subject=${subject}`)
             .then((response) => {
               if (!response.ok) {
                 throw new Error(`HTTP status ${response.status}`);
@@ -224,7 +221,6 @@
               return response.json();
             })
             .then((data) => {
-              // Clear previous error message, if any
               loader.style.display = "none";
               document.getElementById("error").textContent = "";
 
