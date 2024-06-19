@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Marks</title>
+    <style>
+      body {
+        font-family: "Montserrat";
+        /* font-family: Arial, sans-serif; */
+        margin: 0;
+        padding: 0;
+        background-color: #f5f5f5;
+      }
+
+      .made {
+        margin: 0 auto;
+        text-align: center;
+      }
+
+      .container {
+        width: fit-content;
+        margin: 50px auto;
+        padding: 30px 70px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      h1 {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+        align-items: left;
+        justify-content: center;
+        margin-bottom: 20px;
+      }
+
+      .imgg {
+        width: 100px;
+      }
+
+      label {
+        margin-bottom: 10px;
+      }
+
+      input[type="email"],
+      select {
+        width: 250px;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        margin-bottom: 20px;
+      }
+
+      .button-50 {
+        appearance: button;
+        background-color: #000;
+        background-image: none;
+        border: 1px solid #000;
+        border-radius: 4px;
+        box-shadow: #fff 4px 4px 0 0, #000 4px 4px 0 1px;
+        box-sizing: border-box;
+        color: #fff;
+        cursor: pointer;
+        display: inline-block;
+        font-family: ITCAvantGardeStd-Bk, Arial, sans-serif;
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 20px;
+        margin: 0 5px 10px 0;
+        overflow: visible;
+        padding: 8px 40px;
+        text-align: center;
+        text-transform: none;
+        touch-action: manipulation;
+        user-select: none;
+        -webkit-user-select: none;
+        vertical-align: middle;
+        white-space: nowrap;
+        width: fit-content;
+      }
+
+      .button-50:focus {
+        text-decoration: none;
+      }
+
+      .button-50:hover {
+        text-decoration: none;
+      }
+
+      .button-50:active {
+        box-shadow: rgba(0, 0, 0, 0.125) 0 3px 5px inset;
+        outline: 0;
+      }
+
+      .button-50:not([disabled]):active {
+        box-shadow: #fff 2px 2px 0 0, #000 2px 2px 0 1px;
+        transform: translate(2px, 2px);
+      }
+
+      .loader {
+        width: 60px;
+        aspect-ratio: 2;
+        --_g: no-repeat radial-gradient(circle closest-side, #000 90%, #0000);
+        background: var(--_g) 0% 50%, var(--_g) 50% 50%, var(--_g) 100% 50%;
+        background-size: calc(100% / 3) 50%;
+        animation: l3 1s infinite linear;
+      }
+      @keyframes l3 {
+        20% {
+          background-position: 0% 0%, 50% 50%, 100% 50%;
+        }
+        40% {
+          background-position: 0% 100%, 50% 0%, 100% 50%;
+        }
+        60% {
+          background-position: 0% 50%, 50% 100%, 100% 0%;
+        }
+        80% {
+          background-position: 0% 50%, 50% 50%, 100% 100%;
+        }
+      }
+
+      @media (max-width: 768px) {
+        h1 {
+          font-size: 22px;
+        }
+      }
+
+      #userDetails {
+        margin-bottom: 20px;
+      }
+
+      #userMarks {
+        font-size: 16px;
+      }
+
+      #error {
+        color: red;
+        margin-top: 10px;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <img
+        class="imgg"
+        src="https://academically.com/front/assets/img/logo.svg"
+        alt="Logo"
+      />
+      <h1 class="head">
+        Fetch User <span style="color: #103ac5">Scholarship</span> Data
+      </h1>
+      <form id="emailForm">
+        <label for="email">Enter Student Email:</label>
+        <input type="email" id="email" name="email" placeholder="Enter the Email" required/>
+
+        <!-- <label for="subject">Select Subject:</label>
+        <select id="subject">
+          <option value="">--Select Subject--</option>
+          <option value="kaps">KAPS</option>
+          <option value="medicos">Medicos</option>
+          <option value="adc">ADC</option>
+          <option value="nclex">NCLEX</option>
+          <option value="usmle">USMLE</option>
+          <option value="apc">APC</option>
+          <option value="ocanz">OCANZ</option>
+          <option value="psi">PSI</option>
+          <option value="sple">SPLE</option>
+        </select> -->
+
+        <label for="qualification">Select Qualification:</label>
+        <select id="qualification" onchange="updateScholarship()" required>
+          <option value="">--Select Qualification--</option>
+          <option value="pharmacy">Pharmacy</option>
+          <option value="medicine">Medicine</option>
+          <option value="dentistry">Dentistry</option>
+          <option value="physiotherapy">Physiotherapy</option>
+          <option value="nursing">Nursing</option>
+          <option value="optometry">Optometry</option>
+        </select>
+
+        <label for="scholarship">Select Scholarship:</label>
+        <select name="subject" id="subject" required>
+          <option value="">--Select Scholarship--</option>
+        </select>
+        <div>
+          <button class="button-50" type="submit">Fetch Marks</button>
+          <button class="button-50" onclick="runPythonScript()">
+            Download PDF
+          </button>
+        </div>
+      </form>
+      <div class="loader" id="loader" style="display: none"></div>
+
+      <div id="userDetails"></div>
+      <div id="userMarks"></div>
+      <div id="error"></div>
+    </div>
+    <div class="made">Made with love from Product Team ❤️</div>
+
+    <script>
+      document
+        .getElementById("emailForm")
+        .addEventListener("submit", function (event) {
+          event.preventDefault();
+          const email = document.getElementById("email").value;
+          const subject = document.getElementById("subject").value;
+          const loader = document.getElementById("loader");
+
+          function convertSecondsToMinutes(seconds) {
+            var minutes = Math.floor(seconds / 60);
+            var remainingSeconds = seconds % 60;
+            return minutes + " minutes " + remainingSeconds + " seconds";
+          }
+
+          loader.style.display = "block";
+
+          // Using the endpoint to fetch the student details and marks
+          fetch(`/studentDetails?email=${email}&subject=${subject}`)
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error(`HTTP status ${response.status}`);
+              }
+              return response.json();
+            })
+            .then((data) => {
+              loader.style.display = "none";
+              document.getElementById("error").textContent = "";
+
+              if (data.userDetails && data.userDetails.length > 0) {
+                const userDetails = data.userDetails[0];
+                document.getElementById("userDetails").innerHTML = `
+                  <h2 style="color: #0FB995;">User Details</h2>
+                  <p id="studentName"><strong>Student Name:</strong> ${userDetails.student_name}</p>
+                  <p><strong>Student Email:</strong> ${userDetails.student_email}</p>
+                  <p><strong>Student Mobile Number:</strong> ${userDetails.student_mobile_number}</p>
+                  <input type="hidden" id="studentId" name="student_id" value="${userDetails.student_id}">
+              `;
+              } else {
+                document.getElementById("userDetails").innerHTML = `
+                  <p>No user details found.</p>
+                  <input type="hidden" id="studentId" name="student_id" value="">
+                `;
+              }
+
+              // Check for user marks and display them
+              if (data.message === "No attempts") {
+                document.getElementById("userMarks").innerHTML =
+                  '<p style="color: red;">No attempts</p>';
+              } else if (data.userMarks && data.userMarks.length > 0) {
+                const userMarks = data.userMarks[0];
+                const time = userMarks.test_date;
+                const date = new Date(time * 1000);
+                const options = {
+                  timeZone: "Asia/Kolkata",
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  second: "2-digit",
+                };
+
+                document.getElementById("userMarks").innerHTML = `
+                <h2 style="color: #0FB995;">User Marks</h2>
+                <p><strong>Percentage: </strong> ${userMarks.grade}%</p>
+                <p><strong>Total Marks: </strong> ${userMarks.total_mark}</p>
+                <p><strong>Marks secured: </strong> ${userMarks.mark}</p>
+                <p><strong>Total Time taken: </strong> ${convertSecondsToMinutes(
+                  userMarks.user_test_time
+                )}</p>
+                <p><strong>Test taken (Date and Time): </strong> ${date.toLocaleString(
+                  "en-US",
+                  options
+                )} (IST)</p>
+            `;
+              } else {
+                document.getElementById("userMarks").innerHTML =
+                  '<p style="color: red;">No Data Found</p>';
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              loader.style.display = "none";
+              document.getElementById("userDetails").innerHTML = "";
+              document.getElementById("userMarks").innerHTML = "";
+              document.getElementById("error").textContent =
+                "There was a problem fetching the data. Please try again later.";
+            });
+        });
+
+      function runPythonScript() {
+        const studentIdElm = document.getElementById("studentId");
+        const subjectElm = document.getElementById("subject");
+
+        if (!studentIdElm || !subjectElm) {
+          alert("Please fetch student marks first.");
+          return;
+        }
+
+        const payload = {
+          studentId: studentIdElm.value,
+          subject: subjectElm.value,
+        };
+
+        fetch("/run-script", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Could not run Python script.");
+            }
+            return response.blob();
+          })
+          .then((blob) => {
+            const url = window.URL.createObjectURL(new Blob([blob]));
+            const link = document.createElement("a");
+            link.href = url;
+            link.setAttribute("download", "report.pdf");
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode.removeChild(link);
+          })
+          .catch((error) => {
+            // Handle error
+            console.error("Error running Python script:", error);
+            alert("Error running Python script. Please try again later.");
+          });
+      }
+
+      function updateScholarship() {
+      const scholarshipOption = {
+        pharmacy: [
+          {value:'sple', text:'SPLE'},
+          {value: 'psi', text: 'PSI'},
+          {value: 'kaps', text: 'KAPS'},
+          {value: 'moh', text: 'MOH/HAAD/DHA'},
+        ],
+        medicine: [
+          {value: 'usmle', text: 'USMLE'},
+          {value: 'medicos', text: 'Medicos'},
+          {value: 'amcmock', text: 'AMC Mock Test'}
+        ],
+        dentistry: [
+          {value:'adc', text: 'ADC'}
+        ],
+        physiotherapy: [
+          {value: 'apc', text: 'APC'}
+        ],
+        nursing: [
+          {value: 'nclex', text: 'NCLEX'}
+        ],
+        optometry:[
+          {value:'ocanz', text: 'OCANZ'}
+        ]
+      };
+
+      const qualification = document.getElementById('qualification').value;
+      const scholarships = document.getElementById('subject');
+
+      // Clear previous options
+      scholarships.innerHTML = '<option value="">--Select Scholarship--</option>';
+
+      // Add new options based on qualification
+      if (scholarshipOption[qualification]) {
+        scholarshipOption[qualification].forEach(option => {
+          const newOption = document.createElement('option');
+          newOption.value = option.value;
+          newOption.textContent = option.text;
+          scholarships.appendChild(newOption);
+        });
+      }
+    }
+
+    </script>
+  </body>
+</html>

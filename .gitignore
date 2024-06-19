@@ -1,1 +1,12 @@
+# Dependencies
 node_modules/
+.venv/
+
+# Environments
+.env
+
+# Miscellaneous
+*.pyc
+*.pyo
+.vscode
+.DS_Store
