@@ -164,11 +164,12 @@
         Fetch User <span style="color: #103ac5">Scholarship</span> Data
       </h1>
       <form id="emailForm">
-        <label for="email">Enter student email:</label>
-        <input type="email" id="email" name="email" required />
+        <label for="email">Enter Student Email:</label>
+        <input type="email" id="email" name="email" placeholder="Enter the Email" required/>
 
-        <label for="subject">Select subject:</label>
+        <!-- <label for="subject">Select Subject:</label>
         <select id="subject">
+          <option value="">--Select Subject--</option>
           <option value="kaps">KAPS</option>
           <option value="medicos">Medicos</option>
           <option value="adc">ADC</option>
@@ -178,9 +179,23 @@
           <option value="ocanz">OCANZ</option>
           <option value="psi">PSI</option>
           <option value="sple">SPLE</option>
-          <option value="amc-mock">AMC Mock</option>
+        </select> -->
+
+        <label for="qualification">Select Qualification:</label>
+        <select id="qualification" onchange="updateScholarship()" required>
+          <option value="">--Select Qualification--</option>
+          <option value="pharmacy">Pharmacy</option>
+          <option value="medicine">Medicine</option>
+          <option value="dentistry">Dentistry</option>
+          <option value="physiotherapy">Physiotherapy</option>
+          <option value="nursing">Nursing</option>
+          <option value="optometry">Optometry</option>
         </select>
 
+        <label for="scholarship">Select Scholarship:</label>
+        <select name="subject" id="subject" required>
+          <option value="">--Select Scholarship--</option>
+        </select>
         <div>
           <button class="button-50" type="submit">Fetch Marks</button>
           <button class="button-50" onclick="runPythonScript()">
@@ -329,6 +344,51 @@
             alert("Error running Python script. Please try again later.");
           });
       }
+
+      function updateScholarship() {
+      const scholarshipOption = {
+        pharmacy: [
+          {value:'sple', text:'SPLE'},
+          {value: 'psi', text: 'PSI'},
+          {value: 'kaps', text: 'KAPS'},
+          {value: 'moh', text: 'MOH/HAAD/DHA'},
+        ],
+        medicine: [
+          {value: 'usmle', text: 'USMLE'},
+          {value: 'medicos', text: 'Medicos'},
+          {value: 'amcmock', text: 'AMC Mock Test'}
+        ],
+        dentistry: [
+          {value:'adc', text: 'ADC'}
+        ],
+        physiotherapy: [
+          {value: 'apc', text: 'APC'}
+        ],
+        nursing: [
+          {value: 'nclex', text: 'NCLEX'}
+        ],
+        optometry:[
+          {value:'ocanz', text: 'OCANZ'}
+        ]
+      };
+
+      const qualification = document.getElementById('qualification').value;
+      const scholarships = document.getElementById('subject');
+
+      // Clear previous options
+      scholarships.innerHTML = '<option value="">--Select Scholarship--</option>';
+
+      // Add new options based on qualification
+      if (scholarshipOption[qualification]) {
+        scholarshipOption[qualification].forEach(option => {
+          const newOption = document.createElement('option');
+          newOption.value = option.value;
+          newOption.textContent = option.text;
+          scholarships.appendChild(newOption);
+        });
+      }
+    }
+
     </script>
   </body>
 </html>

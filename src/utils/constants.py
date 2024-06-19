@@ -55,7 +55,7 @@ SUBJECT_DATA = {
         "total_questions": 50,
         "total_marks": 50,
     },
-    "amc-mock": {
+    "amcmock": {
         "class_id": 292554,
         "test_id": 119729,
         "topics": [
