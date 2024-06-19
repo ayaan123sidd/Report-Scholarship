@@ -7,6 +7,7 @@ SUBJECT_DATA = {
     "ocanz": (285909, 113240),
     "psi": (286125, 113417),
     "sple": (286126, 113418),
+    "moh":(286797,113417),
     "kaps": {
         "class_id": 238659,
         "test_id": 74556,
@@ -102,10 +103,8 @@ SUBJECT_DATA = {
         ],
         "total_questions": 150,
         "total_marks": 150,
-
     }
 }
-
 LMS_API_HEADERS = {"apiKey": "8209d837743ef9f4b1699ffaa36fe69a", "ORGID": "5735"}
 
 WKHTMLTOPDF_PATH = "/usr/local/bin/wkhtmltopdf"
