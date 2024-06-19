@@ -609,7 +609,7 @@ try:
     # )
 
     # Bar chart for sum of marks per topic
-    topic_names = [topic.get("name", "") for topic in topics]
+    topic_names = [topic.get("name", "").upper() for topic in topics]
     # sum_marks = [
     #     sum_marks_pharmaceutical_chemistry,
     #     sum_marks_pharmacology,
@@ -726,10 +726,13 @@ try:
     #     total_time_physiology,
     #     total_time_pharmaceutics_and_therapeutics,
     # ]
+
+    print("topics_data", topics_data)
     total_times = [sum(topic.get("time_taken")) / 60 for topic in topics_data]
     topicwise_marks = [topic.get("marks_array") for topic in topics_data]
     # Calculate the percentage of correct answers for each topic
     total_questions_per_topic = [len(topic_marks) for topic_marks in topicwise_marks]
+    print("topicwise_marks", topicwise_marks)
     total_correct_per_topic = [
         sum(1 for mark in topic_marks if mark == 1) for topic_marks in topicwise_marks
     ]
