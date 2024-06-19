@@ -60,7 +60,9 @@ try:
 
     # Extract the total questions for each topic
     topic_question_idx = 0
-    total_questions_per_topic = [len(topic.get("total_questions", [])) for topic in topics]
+    total_questions_per_topic = [
+        len(topic.get("total_questions", [])) for topic in topics
+    ]
 
     def count_responses(marks, response):
         return marks.count(response)
@@ -84,7 +86,7 @@ try:
             unattempted,
             correct_percentage,
             incorrect_percentage,
-            unattempted_percentage
+            unattempted_percentage,
         ) = calculate_counts(topic_marks)
 
         topics_data.append(
@@ -100,7 +102,7 @@ try:
                 "correct_percentage": correct_percentage,
                 "incorrect_percentage": incorrect_percentage,
                 "unattempted_percentage": unattempted_percentage,
-                "avg_time": sum(topic_time_taken) / len(topic_time_taken)
+                "avg_time": sum(topic_time_taken) / len(topic_time_taken),
             }
         )
 
@@ -597,48 +599,9 @@ try:
     # Set the style for seaborn plots
     sns.set(style="whitegrid")
 
-    # def calculate_sum_marks(marks):
-    #     return sum(marks)
-
-    # Calculate sum of marks for each topic
-    # sum_marks_pharmaceutical_chemistry = calculate_sum_marks(pharmaceutical_chemistry_marks)
-    # sum_marks_pharmacology = calculate_sum_marks(pharmacology_marks)
-    # sum_marks_physiology = calculate_sum_marks(physiology_marks)
-    # sum_marks_pharmaceutics_and_therapeutics = calculate_sum_marks(
-    #     pharmaceutics_and_therapeutics_marks
-    # )
-
     # Bar chart for sum of marks per topic
     topic_names = [topic.get("name", "") for topic in topics]
-    # sum_marks = [
-    #     sum_marks_pharmaceutical_chemistry,
-    #     sum_marks_pharmacology,
-    #     sum_marks_physiology,
-    #     sum_marks_pharmaceutics_and_therapeutics,
-    # ]
-
     sum_marks = [topic.get("marks") for topic in topics_data]
-
-    # Pie chart for percentage of correct, incorrect, and unattempted questions per topic
-    # correct_counts = [
-    #     pharmaceutical_chemistry_marks.count(1),
-    #     pharmacology_marks.count(1),
-    #     physiology_marks.count(1),
-    #     pharmaceutics_and_therapeutics_marks.count(1),
-    # ]
-    # incorrect_counts = [
-    #     pharmaceutical_chemistry_marks.count(0),
-    #     pharmacology_marks.count(0),
-    #     physiology_marks.count(0),
-    #     pharmaceutics_and_therapeutics_marks.count(0),
-    # ]
-    # unattempted_counts = [
-    #     pharmaceutical_chemistry_marks.count(2),
-    #     pharmacology_marks.count(2),
-    #     physiology_marks.count(2),
-    #     pharmaceutics_and_therapeutics_marks.count(2),
-    # ]
-
     correct_counts = [topic.get("correct_counts") for topic in topics_data]
     incorrect_counts = [topic.get("incorrect_counts") for topic in topics_data]
     unattempted_counts = [topic.get("unattempted_counts") for topic in topics_data]
@@ -659,36 +622,8 @@ try:
         colors=["lightcoral", "lightgreen", "lightblue", "lightyellow"],
     )
 
-    # topic_marks = [
-    #     pharmaceutical_chemistry_marks,
-    #     pharmacology_marks,
-    #     physiology_marks,
-    #     pharmaceutics_and_therapeutics_marks,
-    # ]
-
     topic_marks = [topic.get("marks_array") for topic in topics_data]
-
-    # Calculate total marks for each topic based on correct answers (array element is 1)
-    # total_marks_topicwise = [
-    #     sum(1 for mark in topic_marks if mark == 1)
-    #     for topic_marks in [
-    #         pharmaceutical_chemistry_marks,
-    #         pharmacology_marks,
-    #         physiology_marks,
-    #         pharmaceutics_and_therapeutics_marks,
-    #     ]
-    # ]
-
     total_marks_topicwise = [topic.get("marks") for topic in topics_data]
-
-    # Calculate average time taken for each topic
-    # average_time_taken_a = [
-    #     np.mean(pharmaceutical_chemistry_time),
-    #     np.mean(pharmacology_time),
-    #     np.mean(physiology_time),
-    #     np.mean(pharmaceutics_and_therapeutics_time),
-    # ]
-
     average_time_taken_a = [np.mean(topic.get("time_taken")) for topic in topics_data]
 
     # Calculate percentages of correct, incorrect, and unattempted questions
@@ -708,24 +643,8 @@ try:
     sizes = [percent_correct, percent_incorrect, percent_unattempted]
     colors = ["lightcoral", "lightskyblue", "lightgreen"]
 
-    # Calculate total time taken per section
-    # total_time_pharmaceutical_chemistry = sum(pharmaceutical_chemistry_time) / 60
-    # total_time_pharmacology = sum(pharmacology_time) / 60
-    # total_time_physiology = sum(physiology_time) / 60
-    # total_time_pharmaceutics_and_therapeutics = (
-    #     sum(pharmaceutics_and_therapeutics_time) / 60
-    # )
-
-    # total_time_topicwise = [sum(topic.time_taken)/60 for topic in topics_data]
-
     # Define section names
     sections = topic_names
-    # total_times = [
-    #     total_time_pharmaceutical_chemistry,
-    #     total_time_pharmacology,
-    #     total_time_physiology,
-    #     total_time_pharmaceutics_and_therapeutics,
-    # ]
     total_times = [sum(topic.get("time_taken")) / 60 for topic in topics_data]
     topicwise_marks = [topic.get("marks_array") for topic in topics_data]
     # Calculate the percentage of correct answers for each topic
@@ -775,42 +694,66 @@ try:
     # Create a PDF file to save the plots
     with PdfPages("assets/pdfs/graphs_summary.pdf") as pdf:
         plt.figure(figsize=(7, 6))
-        bars = plt.barh(topic_names, total_marks_topicwise, color="skyblue", height=0.5)  # Use plt.barh for horizontal bar plot
+        bars = plt.barh(
+            topic_names, total_marks_topicwise, color="skyblue", height=0.5
+        )  # Use plt.barh for horizontal bar plot
         plt.title("Topic-wise Total Marks (Correct Answers)")
         plt.xlabel("Total Correct Answers")
         plt.ylabel("Topics")
 
         # Split y-tick labels into two lines after a certain character limit
-        ytick_labels = [label[:10] + '\n' + label[10:] if len(label) > 10 else label for label in topic_names]
+        ytick_labels = [
+            label[:10] + "\n" + label[10:] if len(label) > 10 else label
+            for label in topic_names
+        ]
 
         # Set y-tick labels with margin on the top
-        plt.yticks(range(len(topic_names)), ytick_labels, rotation=0, ha="right", fontsize=8)
+        plt.yticks(
+            range(len(topic_names)), ytick_labels, rotation=0, ha="right", fontsize=8
+        )
 
         plt.grid(axis="x", linestyle="--", alpha=0.7)  # Adjust grid lines along x-axis
         plt.tight_layout(pad=3.5)  # Add padding/margins around the plot
 
-        summary = "This graph indicates the total number of correct answers for each topic."
-        plt.figtext(0.5, 0.01, summary, wrap=True, ha="center", fontsize=8) # Adjust figtext position for summary
+        summary = (
+            "This graph indicates the total number of correct answers for each topic."
+        )
+        plt.figtext(
+            0.5, 0.01, summary, wrap=True, ha="center", fontsize=8
+        )  # Adjust figtext position for summary
         pdf.savefig(pad_inches=(20, 20, 20, 20))  # Adjust page size here
         plt.close()
 
         plt.figure(figsize=(7, 6))
-        bars = plt.barh(topic_names, average_time_taken_a, color="lightgreen", height=0.5)  # Use plt.barh for horizontal bar plot
-        plt.title("TOPIC-WISE AVERAGE TIME TAKEN PER QUESTION", fontsize=10, fontweight='bold')  # Title in uppercase
-        plt.xlabel("AVERAGE TIME TAKEN (SECONDS)", fontsize=8, fontweight='bold')  # X-axis label in uppercase
-        plt.ylabel("TOPICS", fontsize=8, fontweight='bold')  # Y-axis label in uppercase
+        bars = plt.barh(
+            topic_names, average_time_taken_a, color="lightgreen", height=0.5
+        )  # Use plt.barh for horizontal bar plot
+        plt.title(
+            "TOPIC-WISE AVERAGE TIME TAKEN PER QUESTION", fontsize=10, fontweight="bold"
+        )  # Title in uppercase
+        plt.xlabel(
+            "AVERAGE TIME TAKEN (SECONDS)", fontsize=8, fontweight="bold"
+        )  # X-axis label in uppercase
+        plt.ylabel("TOPICS", fontsize=8, fontweight="bold")  # Y-axis label in uppercase
 
         # Set y-tick labels in uppercase and split into two lines after a certain character limit
-        ytick_labels = [label[:12] + '\n' + label[12:] if len(label) > 12 else label for label in topic_names]
+        ytick_labels = [
+            label[:12] + "\n" + label[12:] if len(label) > 12 else label
+            for label in topic_names
+        ]
 
         # Set y-tick labels with margin on the right
-        plt.yticks(range(len(topic_names)), ytick_labels, rotation=0, ha="right", fontsize=8)
+        plt.yticks(
+            range(len(topic_names)), ytick_labels, rotation=0, ha="right", fontsize=8
+        )
 
         plt.grid(axis="x", linestyle="--", alpha=0.7)  # Adjust grid lines along x-axis
         plt.tight_layout(pad=3.5)  # Add padding/margins around the plot
 
         summary = "THIS GRAPH INDICATES THE AVERAGE TIME TAKEN PER QUESTION FOR EACH TOPIC."  # Summary in uppercase
-        plt.figtext(0.5, 0.01, summary, wrap=True, ha="center", fontsize=8) # Adjust figtext position for summary
+        plt.figtext(
+            0.5, 0.01, summary, wrap=True, ha="center", fontsize=8
+        )  # Adjust figtext position for summary
 
         pdf.savefig(pad_inches=(20, 20, 20, 20))  # Adjust page size here
         plt.close()
@@ -856,17 +799,28 @@ try:
         plt.close()
 
         plt.figure(figsize=(7, 6))
-        bars = plt.barh(topic_names, percentage_correct_topicwise, color="orange", height=0.5)
-        plt.title("PERCENTAGE OF CORRECT ANSWERS TOPIC-WISE", fontsize=10, fontweight='bold')  # Title in uppercase
-        plt.xlabel("PERCENTAGE OF CORRECT ANSWERS", fontsize=8, fontweight='bold')  # X-axis label in uppercase
-        plt.ylabel("TOPICS", fontsize=8, fontweight='bold')  # Y-axis label in uppercase
+        bars = plt.barh(
+            topic_names, percentage_correct_topicwise, color="orange", height=0.5
+        )
+        plt.title(
+            "PERCENTAGE OF CORRECT ANSWERS TOPIC-WISE", fontsize=10, fontweight="bold"
+        )  # Title in uppercase
+        plt.xlabel(
+            "PERCENTAGE OF CORRECT ANSWERS", fontsize=8, fontweight="bold"
+        )  # X-axis label in uppercase
+        plt.ylabel("TOPICS", fontsize=8, fontweight="bold")  # Y-axis label in uppercase
         plt.gca().xaxis.set_major_formatter(FuncFormatter(percentage_formatter))
 
         # Split y-tick labels into two lines after a certain character limit
-        ytick_labels = [label[:10] + '\n' + label[10:] if len(label) > 10 else label for label in topic_names]
+        ytick_labels = [
+            label[:10] + "\n" + label[10:] if len(label) > 10 else label
+            for label in topic_names
+        ]
 
         # Set y-tick labels with margin on the right
-        plt.yticks(range(len(topic_names)), ytick_labels, fontsize=8, va="center", ha="right")
+        plt.yticks(
+            range(len(topic_names)), ytick_labels, fontsize=8, va="center", ha="right"
+        )
 
         plt.grid(axis="x", linestyle="--", alpha=0.7)  # Adjust grid lines along x-axis
         plt.tight_layout(pad=3.5)  # Add padding/margins around the plot
@@ -896,13 +850,22 @@ try:
             label="Incorrect",
         )
 
-        plt.title("PERCENTAGE OF CORRECT VS INCORRECT ANSWERS TOPIC-WISE", fontsize=10, fontweight='bold')  # Title in uppercase
-        plt.xlabel("PERCENTAGE OF ANSWERS", fontsize=8, fontweight='bold')  # X-axis label in uppercase
-        plt.ylabel("TOPICS", fontsize=8, fontweight='bold')  # Y-axis label in uppercase
+        plt.title(
+            "PERCENTAGE OF CORRECT VS INCORRECT ANSWERS TOPIC-WISE",
+            fontsize=10,
+            fontweight="bold",
+        )  # Title in uppercase
+        plt.xlabel(
+            "PERCENTAGE OF ANSWERS", fontsize=8, fontweight="bold"
+        )  # X-axis label in uppercase
+        plt.ylabel("TOPICS", fontsize=8, fontweight="bold")  # Y-axis label in uppercase
         plt.gca().xaxis.set_major_formatter(FuncFormatter(percentage_formatter))
 
         # Split y-tick labels into two lines after a certain character limit and make them uppercase
-        ytick_labels = [label[:10] + '\n' + label[10:] if len(label) > 10 else label for label in topic_names]
+        ytick_labels = [
+            label[:10] + "\n" + label[10:] if len(label) > 10 else label
+            for label in topic_names
+        ]
         ytick_labels = [label.upper() for label in ytick_labels]
 
         # Set y-tick labels with margin on the right
@@ -917,108 +880,6 @@ try:
         plt.figtext(0.5, 0.01, summary, wrap=True, ha="center", fontsize=8)
         pdf.savefig(pad_inches=(20, 20, 20, 20))  # Adjust page size here
         plt.close()
-
-    # (
-    #     pharmaceutical_chemistry_total,
-    #     pharmaceutical_chemistry_correct,
-    #     pharmaceutical_chemistry_incorrect,
-    #     pharmaceutical_chemistry_unattempted,
-    #     pharmaceutical_chemistry_correct_percentage,
-    #     pharmaceutical_chemistry_incorrect_percentage,
-    #     pharmaceutical_chemistry_unattempted_percentage,
-    # ) = calculate_counts(pharmaceutical_chemistry_marks)
-
-    # (
-    #     pharmacology_total,
-    #     pharmacology_correct,
-    #     pharmacology_incorrect,
-    #     pharmacology_unattempted,
-    #     pharmacology_correct_percentage,
-    #     pharmacology_incorrect_percentage,
-    #     pharmacology_unattempted_percentage,
-    # ) = calculate_counts(pharmacology_marks)
-
-    # (
-    #     physiology_total,
-    #     physiology_correct,
-    #     physiology_incorrect,
-    #     physiology_unattempted,
-    #     physiology_correct_percentage,
-    #     physiology_incorrect_percentage,
-    #     physiology_unattempted_percentage,
-    # ) = calculate_counts(physiology_marks)
-
-    # (
-    #     pharmaceutics_and_therapeutics_total,
-    #     pharmaceutics_and_therapeutics_correct,
-    #     pharmaceutics_and_therapeutics_incorrect,
-    #     pharmaceutics_and_therapeutics_unattempted,
-    #     pharmaceutics_and_therapeutics_correct_percentage,
-    #     pharmaceutics_and_therapeutics_incorrect_percentage,
-    #     pharmaceutics_and_therapeutics_unattempted_percentage,
-    # ) = calculate_counts(pharmaceutics_and_therapeutics_marks)
-
-    # Average time taken per question for each topic
-    # pharmaceutical_chemistry_avg_time = sum(pharmaceutical_chemistry_time) / len(
-    #     pharmaceutical_chemistry_time
-    # )
-    # pharmacology_avg_time = sum(pharmacology_time) / len(pharmacology_time)
-    # physiology_avg_time = sum(physiology_time) / len(physiology_time)
-    # pharmaceutics_and_therapeutics_avg_time = sum(
-    #     pharmaceutics_and_therapeutics_time
-    # ) / len(pharmaceutics_and_therapeutics_time)
-
-    # Convert time to minutes for better readability
-    # pharmaceutical_chemistry_avg_time_minutes = pharmaceutical_chemistry_avg_time / 60
-    # pharmacology_avg_time_minutes = pharmacology_avg_time / 60
-    # physiology_avg_time_minutes = physiology_avg_time / 60
-    # pharmaceutics_and_therapeutics_avg_time_minutes = (
-    #     pharmaceutics_and_therapeutics_avg_time / 60
-    # )
-
-    # Correct, incorrect, and unattempted counts for each topic
-    # pharmaceutical_chemistry_correct_count = pharmaceutical_chemistry_marks.count(1)
-    # pharmaceutical_chemistry_incorrect_count = pharmaceutical_chemistry_marks.count(0)
-    # pharmaceutical_chemistry_unattempted_count = pharmaceutical_chemistry_marks.count(2)
-
-    # pharmacology_correct_count = pharmacology_marks.count(1)
-    # pharmacology_incorrect_count = pharmacology_marks.count(0)
-    # pharmacology_unattempted_count = pharmacology_marks.count(2)
-
-    # physiology_correct_count = physiology_marks.count(1)
-    # physiology_incorrect_count = physiology_marks.count(0)
-    # physiology_unattempted_count = physiology_marks.count(2)
-
-    # pharmaceutics_and_therapeutics_correct_count = (
-    #     pharmaceutics_and_therapeutics_marks.count(1)
-    # )
-    # pharmaceutics_and_therapeutics_incorrect_count = (
-    #     pharmaceutics_and_therapeutics_marks.count(0)
-    # )
-    # pharmaceutics_and_therapeutics_unattempted_count = (
-    #     pharmaceutics_and_therapeutics_marks.count(2)
-    # )
-
-    # Total counts for each topic
-    # pharmaceutical_chemistry_total_count = len(pharmaceutical_chemistry_marks)
-    # pharmacology_total_count = len(pharmacology_marks)
-    # physiology_total_count = len(physiology_marks)
-    # pharmaceutics_and_therapeutics_total_count = len(
-    #     pharmaceutics_and_therapeutics_marks
-    # )
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     # Create a PDF file
     with PdfPages("assets/pdfs/analysis_plots.pdf") as pdf:
@@ -1104,21 +965,6 @@ try:
             720,
         )  # 10x10 inches in points (1 inch = 72 points)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     options = {
         "margin-top": "0",
         "margin-bottom": "0",
@@ -1126,35 +972,12 @@ try:
         "margin-right": "0",
     }
 
-    # max and min subject
-    # subject_percentages = {
-    #     "Pharmaceutical Chemistry": pharmaceutical_chemistry_correct_percentage,
-    #     "Pharmacology": pharmacology_correct_percentage,
-    #     "Physiology": physiology_correct_percentage,
-    #     "Pharmaceutics and Therapeutics": pharmaceutics_and_therapeutics_correct_percentage,
-    # }
-
     subject_percentages = {}
     for topic in topics_data:
         subject_percentages[topic["name"]] = topic["correct_percentage"]
 
     max_subject = max(subject_percentages, key=subject_percentages.get)
     min_subject = min(subject_percentages, key=subject_percentages.get)
-
-    # max_percentage = max(
-    #     pharmaceutical_chemistry_correct_percentage,
-    #     pharmacology_correct_percentage,
-    #     physiology_correct_percentage,
-    #     pharmaceutics_and_therapeutics_correct_percentage,
-    # )
-
-    # min_percentage = min(
-    #     pharmaceutical_chemistry_correct_percentage,
-    #     pharmacology_correct_percentage,
-    #     physiology_correct_percentage,
-    #     pharmaceutics_and_therapeutics_correct_percentage,
-    # )
-
     correct_percentages = [topic["correct_percentage"] for topic in topics_data]
 
     max_percentage = max(correct_percentages)
@@ -1222,58 +1045,12 @@ try:
         "average_time_taken": average_time_taken,
         "rank1_time_efficiency": rank1_time_efficiency,
         "avg_time_efficiency": avg_time_efficiency,
-        # "pharmaceutical_chemistry_avg_time": pharmaceutical_chemistry_avg_time,
-        # "pharmaceutical_chemistry_correct": pharmaceutical_chemistry_correct,
-        # "pharmaceutical_chemistry_total": pharmaceutical_chemistry_total,
-        # "pharmaceutical_chemistry_correct_percentage": pharmaceutical_chemistry_correct_percentage,
-        # "pharmaceutical_chemistry_incorrect": pharmaceutical_chemistry_incorrect,
-        # "pharmaceutical_chemistry_incorrect_percentage": pharmaceutical_chemistry_incorrect_percentage,
-        # "pharmaceutical_chemistry_unattempted": pharmaceutical_chemistry_unattempted,
-        # "pharmaceutical_chemistry_unattempted_percentage": pharmaceutical_chemistry_unattempted_percentage,
-        # "pharmacology_avg_time": pharmacology_avg_time,
-        # "pharmacology_correct": pharmacology_correct,
-        # "pharmacology_total": pharmacology_total,
-        # "pharmacology_correct_percentage": pharmacology_correct_percentage,
-        # "pharmacology_incorrect": pharmacology_incorrect,
-        # "pharmacology_incorrect_percentage": pharmacology_incorrect_percentage,
-        # "pharmacology_unattempted": pharmacology_unattempted,
-        # "pharmacology_unattempted_percentage": pharmacology_unattempted_percentage,
-        # "physiology_avg_time": physiology_avg_time,
-        # "physiology_correct": physiology_correct,
-        # "physiology_total": physiology_total,
-        # "physiology_correct_percentage": physiology_correct_percentage,
-        # "physiology_incorrect": physiology_incorrect,
-        # "physiology_incorrect_percentage": physiology_incorrect_percentage,
-        # "physiology_unattempted": physiology_unattempted,
-        # "physiology_unattempted_percentage": physiology_unattempted_percentage,
-        # "pharmaceutics_and_therapeutics_avg_time": pharmaceutics_and_therapeutics_avg_time,
-        # "pharmaceutics_and_therapeutics_correct": pharmaceutics_and_therapeutics_correct,
-        # "pharmaceutics_and_therapeutics_total": pharmaceutics_and_therapeutics_total,
-        # "pharmaceutics_and_therapeutics_correct_percentage": pharmaceutics_and_therapeutics_correct_percentage,
-        # "pharmaceutics_and_therapeutics_incorrect": pharmaceutics_and_therapeutics_incorrect,
-        # "pharmaceutics_and_therapeutics_incorrect_percentage": pharmaceutics_and_therapeutics_incorrect_percentage,
-        # "pharmaceutics_and_therapeutics_unattempted": pharmaceutics_and_therapeutics_unattempted,
-        # "pharmaceutics_and_therapeutics_unattempted_percentage": pharmaceutics_and_therapeutics_unattempted_percentage,
         "strong_areas": strong_areas,
         "weak_areas": weak_areas,
         "passing_result": passing_result,
         "topics_data": topics_data,
     }
 
-
-
-    # for topic in topics_data:
-    #     topic_name = topic.get("name", "")
-    #     front_page_args[f"{topic_name}_avg_time"] = topic.get("avg_time", 0)
-    #     front_page_args[f"{topic_name}_correct"] = topic.get("correct", 0)
-    #     front_page_args[f"{topic_name}_incorrect"] = topic.get("incorrect", 0)
-    #     front_page_args[f"{topic_name}_unattempted"] = topic.get("unattempted", 0)
-    #     front_page_args[f"{topic_name}_total"] = topic.get("total", 0)
-    #     front_page_args[f"{topic_name}_correct_percentage"] = topic.get("correct_percentage", 0)
-    #     front_page_args[f"{topic_name}_incorrect_percentage"] = topic.get("incorrect_percentage", 0)
-    #     front_page_args[f"{topic_name}_unattempted_percentage"] = topic.get("unattempted_percentage", 0)
-
-    
     html_content1 = generate_front_page(**front_page_args)
 
     config = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_PATH)
