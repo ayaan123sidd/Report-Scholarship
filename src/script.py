@@ -1,20 +1,10 @@
 import sys
+from utils.constants import SUBJECT_DATA
 
-subject_data = {
-  'kaps': (238659, 74556),
-  'medicos': (262859, 89822),
-  'adc': (272073, 98161),
-  'nclex': (280097, 105398),
-  'usmle': (262232, 91181),
-  'apc': (271165, 97775),
-  'ocanz': (285909, 113240),
-  'psi': (286125, 113417),
-  'sple': (286126, 113418),
-}
 
 def get_class_and_test_id(subject):
-  if subject in subject_data:
-    classId, testId = subject_data[subject]
+  if subject in SUBJECT_DATA:
+    classId, testId = SUBJECT_DATA[subject]
     return classId, testId
   else:
     return None  

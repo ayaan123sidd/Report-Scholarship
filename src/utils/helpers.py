@@ -3,8 +3,8 @@ from utils.constants import SUBJECT_DATA
 
 def get_class_and_test_id(subject):
     if subject in SUBJECT_DATA:
-        classId, testId = SUBJECT_DATA[subject]
-        return classId, testId
+        data = SUBJECT_DATA[subject]
+        return data.get("class_id", 0), data.get("test_id", 0)
     else:
         return None
 
@@ -14,16 +14,19 @@ def calculate_sum_marks(marks):
     return sum(mark for mark in marks if mark == 1)
 
 
-def process_question_data(questions):
-    marks_array = [0] * 50
-    time_taken_array = [0] * 50
+def process_question_data(questions, subject):
+    subject_data = SUBJECT_DATA[subject]
+    total_questions = subject_data.get('total_questions', 0)
+    marks_array = [0] * total_questions
+    time_taken_array = [0] * total_questions
 
-    for i in range(50):
+    for i in range(total_questions):
         if i < len(questions):
             question = questions[i]
             if "markedInputs" in question:
                 marked_input = question["markedInputs"][0]
                 if "is_attempted" in marked_input:
+                    # flags for marks_array[i] , i = 1 correct, 0 = incorrect, 2 = unattempted
                     if marked_input["is_attempted"] == 1:
                         marks_array[i] = 1 if marked_input.get("correct", 0) == 1 else 0
                     else:
@@ -43,6 +46,7 @@ def calculate_counts(marks):
     correct_percentage = (correct / total) * 100
     incorrect_percentage = (incorrect / total) * 100
     unattempted_percentage = (unattempted / total) * 100
+
     return total, correct, incorrect, unattempted, correct_percentage, incorrect_percentage, unattempted_percentage
 
 
@@ -69,7 +73,7 @@ def split_label(label):
         return label[:index] + "\n" + label[index + 1 :]
     else:
         return label
-    
+
 
 def get_summary_to_display(percent):
     if percent > 70:
@@ -101,41 +105,42 @@ def generate_front_page(
     average_time_taken,
     rank1_time_efficiency,
     avg_time_efficiency,
-    pharmaceutical_chemistry_avg_time,
-    pharmaceutical_chemistry_correct,
-    pharmaceutical_chemistry_total,
-    pharmaceutical_chemistry_correct_percentage,
-    pharmaceutical_chemistry_incorrect,
-    pharmaceutical_chemistry_incorrect_percentage,
-    pharmaceutical_chemistry_unattempted,
-    pharmaceutical_chemistry_unattempted_percentage,
-    pharmacology_avg_time,
-    pharmacology_correct,
-    pharmacology_total,
-    pharmacology_correct_percentage,
-    pharmacology_incorrect,
-    pharmacology_incorrect_percentage,
-    pharmacology_unattempted,
-    pharmacology_unattempted_percentage,
-    physiology_avg_time,
-    physiology_correct,
-    physiology_total,
-    physiology_correct_percentage,
-    physiology_incorrect,
-    physiology_incorrect_percentage,
-    physiology_unattempted,
-    physiology_unattempted_percentage,
-    pharmaceutics_and_therapeutics_avg_time,
-    pharmaceutics_and_therapeutics_correct,
-    pharmaceutics_and_therapeutics_total,
-    pharmaceutics_and_therapeutics_correct_percentage,
-    pharmaceutics_and_therapeutics_incorrect,
-    pharmaceutics_and_therapeutics_incorrect_percentage,
-    pharmaceutics_and_therapeutics_unattempted,
-    pharmaceutics_and_therapeutics_unattempted_percentage,
+    # pharmaceutical_chemistry_avg_time,
+    # pharmaceutical_chemistry_correct,
+    # pharmaceutical_chemistry_total,
+    # pharmaceutical_chemistry_correct_percentage,
+    # pharmaceutical_chemistry_incorrect,
+    # pharmaceutical_chemistry_incorrect_percentage,
+    # pharmaceutical_chemistry_unattempted,
+    # pharmaceutical_chemistry_unattempted_percentage,
+    # pharmacology_avg_time,
+    # pharmacology_correct,
+    # pharmacology_total,
+    # pharmacology_correct_percentage,
+    # pharmacology_incorrect,
+    # pharmacology_incorrect_percentage,
+    # pharmacology_unattempted,
+    # pharmacology_unattempted_percentage,
+    # physiology_avg_time,
+    # physiology_correct,
+    # physiology_total,
+    # physiology_correct_percentage,
+    # physiology_incorrect,
+    # physiology_incorrect_percentage,
+    # physiology_unattempted,
+    # physiology_unattempted_percentage,
+    # pharmaceutics_and_therapeutics_avg_time,
+    # pharmaceutics_and_therapeutics_correct,
+    # pharmaceutics_and_therapeutics_total,
+    # pharmaceutics_and_therapeutics_correct_percentage,
+    # pharmaceutics_and_therapeutics_incorrect,
+    # pharmaceutics_and_therapeutics_incorrect_percentage,
+    # pharmaceutics_and_therapeutics_unattempted,
+    # pharmaceutics_and_therapeutics_unattempted_percentage,
     strong_areas,
     weak_areas,
     passing_result,
+    topics_data,
 ):
 
     summary_to_display = get_summary_to_display(percent)
@@ -448,34 +453,17 @@ def generate_front_page(
         <div class="container2">
         <h1 class='generative'>AI-Powered Assessment</h1>
         <p><em>AI-Generated Comprehensive Test Analysis.</em></p>
-        <div class="summary2">
-            <h2>Pharmaceutical Chemistry:</h2>
-            <p>Average Time per Question: {pharmaceutical_chemistry_avg_time:.1f} seconds</p>
-            <p>Correct Answers: {pharmaceutical_chemistry_correct} out of {pharmaceutical_chemistry_total} ({pharmaceutical_chemistry_correct_percentage:.1f}%)</p>
-            <p>Incorrect Answers: {pharmaceutical_chemistry_incorrect} out of {pharmaceutical_chemistry_total} ({pharmaceutical_chemistry_incorrect_percentage:.1f}%)</p>
-            <p>Unattempted: {pharmaceutical_chemistry_unattempted} out of {pharmaceutical_chemistry_total} ({pharmaceutical_chemistry_unattempted_percentage:.1f}%)</p>
-        </div>
-        <div class="summary2">
-            <h2>Pharmacology Analytics</h2>
-            <p>Average Time per Question: {pharmacology_avg_time:.1f} seconds</p>
-            <p>Correct Answers: {pharmacology_correct} out of {pharmacology_total} ({pharmacology_correct_percentage:.1f}%)</p>
-            <p>Incorrect Answers: {pharmacology_incorrect} out of {pharmacology_total} ({pharmacology_incorrect_percentage:.1f}%)</p>
-            <p>Unattempted: {pharmacology_unattempted} out of {pharmacology_total} ({pharmacology_unattempted_percentage:.1f}%)</p>
-        </div>
-        <div class="summary2">
-            <h2>Physiology Analytics</h2>
-            <p>Average Time per Question: {physiology_avg_time:.1f} seconds</p>
-            <p>Correct Answers: {physiology_correct} out of {physiology_total} ({physiology_correct_percentage:.1f}%)</p>
-            <p>Incorrect Answers: {physiology_incorrect} out of {physiology_total} ({physiology_incorrect_percentage:.1f}%)</p>
-            <p>Unattempted: {physiology_unattempted} out of {physiology_total} ({physiology_unattempted_percentage:.1f}%)</p>
-        </div>
-        <div class="summary2">
-            <h2>Pharmaceutics and Therapeutics Analytics</h2>
-            <p>Average Time per Question: {pharmaceutics_and_therapeutics_avg_time} seconds</p>
-            <p>Correct Answers: {pharmaceutics_and_therapeutics_correct} out of {pharmaceutics_and_therapeutics_total} ({pharmaceutics_and_therapeutics_correct_percentage:.1f}%)</p>
-            <p>Incorrect Answers: {pharmaceutics_and_therapeutics_incorrect} out of {pharmaceutics_and_therapeutics_total} ({pharmaceutics_and_therapeutics_incorrect_percentage:.1f}%)</p>
-            <p>Unattempted: {pharmaceutics_and_therapeutics_unattempted} out of {pharmaceutics_and_therapeutics_total} ({pharmaceutics_and_therapeutics_unattempted_percentage:.1f}%)</p>
-        </div>
+        {''.join([
+            f"""
+            <div class="summary2">
+                <h2>{topic.get("name")}</h2>
+                <p>Average Time per Question: {topic.get("avg_time"):.1f} seconds</p>
+                <p>Correct Answers: {topic.get("correct_counts")} out of {topic.get("total")} ({topic.get("correct_percentage"):.1f}%)</p>
+                <p>Incorrect Answers: {topic.get("incorrect_counts")} out of {topic.get("total")} ({topic.get("incorrect_percentage"):.1f}%)</p>
+                <p>Unattempted: {topic.get("unattempted_counts")} out of {topic.get("total")} ({topic.get("unattempted_percentage"):.1f}%)</p>
+            </div>
+            """ for topic in topics_data
+        ])}
         <div class="summary2">
             <h2>Strengths and Weaknesses</h2>
             <p><strong>Strong Areas:</strong> {strong_areas}</p>
