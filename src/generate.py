@@ -350,17 +350,19 @@ try:
     def time_efficiency(student_id):
         marks_data = marks_analysis2(student_id)
         if marks_data is None:
-            return 0
-        max_marks, total_marks = marks_data
+            return None
+        marks, total_marks = marks_data
         if total_marks == 0:
-            return 0  # or return 0 or any other value as appropriate
+            return None  # or return 0 or any other value as appropriate
 
-        # max_time_taken, total_time_taken = time_taken_analysis(student_id)
-        max_time_taken = 40
-        total_time_taken = 60
+        # Normalize marks and time taken
+        normalized_marks = marks / 50  # Maximum marks
+        normalized_time_taken = (
+            time_taken_analysis(student_id) / 60
+        )  # Maximum time taken
 
-        efficiency = (max_marks/total_marks * 0.7) + ((1 - max_time_taken/total_time_taken )* 0.3) * 100
-
+        # Calculate efficiency within 100%
+        efficiency = (normalized_marks + (1 - normalized_time_taken)) * 50
         return efficiency
 
     def time_efficiency_for_current_student():
