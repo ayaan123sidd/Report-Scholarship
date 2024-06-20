@@ -108,4 +108,4 @@ SUBJECT_DATA = {
 
 LMS_API_HEADERS = {"apiKey": "8209d837743ef9f4b1699ffaa36fe69a", "ORGID": "5735"}
 
-WKHTMLTOPDF_PATH = "/usr/local/bin/wkhtmltopdf"
+WKHTMLTOPDF_PATH = "C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe"
