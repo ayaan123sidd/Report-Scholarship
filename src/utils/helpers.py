@@ -228,8 +228,9 @@ def generate_front_page(
             }}
             .note{{
                 text-align: justify;
-                margin-top:30px;
-                padding: 0px 50px;
+                margin-top: 50px;
+                padding: 0px 70px;
+                padding-top: 50px;
             }}
             .how{{
                  text-align: justify;
@@ -267,9 +268,8 @@ def generate_front_page(
             }}
             .passprob{{
                 text-align: justify;
-                margin-top:40px;
                 padding: 0px 70px;
-                padding-top:50px
+                padding-top:35px
             }}
             .passprob div{{
                 font-size:18px;
