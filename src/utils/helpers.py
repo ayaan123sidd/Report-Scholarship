@@ -445,7 +445,7 @@ def generate_front_page(
             <h2>SWOT Analysis</h2>
             <p><strong>Strong Areas:</strong> {strong_areas}</p>
             <p><strong>Weak Areas:</strong> {weak_areas}</p>
-            <p><strong>Opportunities:</strong> <b><i>[Topic A]</i></b> and <b><i>[Topic B]</i></b> demonstrate high time efficiency scores, showing strong proficiency and potential for further mastery. This indicates efficient time management and deep understanding. Focusing on these topics can lead to advanced learning and higher scores through exploring related concepts and refining problem-solving skills.</p>
+            <p><strong>Opportunities:</strong> <b><i>Topics [Topic A]</i></b> and <b><i>[Topic B]</i></b> demonstrate high time efficiency scores, showing strong proficiency and potential for further mastery. This indicates efficient time management and deep understanding. Focusing on these topics can lead to advanced learning and higher scores through exploring related concepts and refining problem-solving skills.</p>
             <p><strong>Threat:</strong> However, <b><i>[Topic C]</i></b> and <b><i>[Topic D]</i></b> exhibit lower time efficiency scores, suggesting challenges in time management or understanding. To improve, prioritize enhancing time management skills, breaking down complex topics, and seeking additional study resources. Addressing these areas will enhance efficiency and comprehension, leading to better performance in assessments.</p>
         </div>
     </div>

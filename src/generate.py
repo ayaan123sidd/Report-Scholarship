@@ -340,7 +340,7 @@ try:
         # Add max time horizontal line
         ax.axhline(max_time, color='blue', linestyle='--', label=f'Max Time: {max_time} minutes')
 
-        ax.set_title("Time Taken Analysis (Top 10 Users)")
+        ax.set_title("Time Taken Analysis (Top 10 Students)")
         ax.set_xlabel("Students")
         ax.set_ylabel("Time Taken (minutes)")
         ax.set_xticks([])
@@ -427,7 +427,8 @@ try:
         ax.set_title("Time Efficiency Analysis (Top 10 Users)")
         ax.set_xlabel("Time Efficiency (%)")
         ax.set_ylabel("Students")
-        ax.legend(loc="best")
+        # ax.legend(loc='upper left', bbox_to_anchor=(0.5, -0.25))
+        ax.legend(loc='best')
         ax.set_yticks([])
         return fig
 
