@@ -112,6 +112,6 @@ SUBJECT_DATA = {
 
 LMS_API_HEADERS = {"apiKey": "8209d837743ef9f4b1699ffaa36fe69a", "ORGID": "5735"}
 
-WKHTMLTOPDF_PATH = "/usr/local/bin/wkhtmltopdf" # FOR WINDOWS - "C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe"
+WKHTMLTOPDF_PATH = "/usr/local/bin/wkhtmltopdf" # FOR MAC - "/usr/local/bin/wkhtmltopdf"    # FOR WINDOWS - "C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe"
 
 CUSTOM_TOP_10_STUDENTS_TIME_TAKEN = [random.randint(40, 50) for _ in list(range(1, 11))]
