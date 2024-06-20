@@ -104,6 +104,7 @@ def generate_front_page(
     minutes,
     seconds,
     rank,
+    percentile,
     rank1_accuracy,
     avg_percent,
     rank1_marks,
@@ -307,8 +308,10 @@ def generate_front_page(
                 <p><strong>Marks Obtained (out of 50): </strong> {marks}</p>
                 <p><strong>Time taken: </strong> {minutes} minutes, {seconds} seconds</p>
                 <p><strong>Time Efficiency: </strong> {time_efficiency2}% </p>
-                <p><strong>Rank of Student: </strong> {rank} </p>
+                <p><strong>Percentile of Student: </strong> {percentile} %</p>
+                <p><strong>Rank of Student: </strong> {rank}</p>
                 {'<p class="equal"><em><strong>Note: </strong>Percentage and accuracy are equal because the student attempted all questions.</em></p>' if percent == accuracy else ''}
+                <p class="equal"><em><strong>Percentile </strong>The student is above {percentile}% of the test users</em></p>
             </div>
             </div>
            
