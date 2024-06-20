@@ -1,3 +1,5 @@
+import random
+
 SUBJECT_DATA = {
     "medicos": (262859, 89822),
     "adc": (272073, 98161),
@@ -55,6 +57,7 @@ SUBJECT_DATA = {
         ],
         "total_questions": 50,
         "total_marks": 50,
+        "max_time": 60, # in minutes
     },
     "amcmock": {
         "class_id": 292554,
@@ -103,9 +106,12 @@ SUBJECT_DATA = {
         ],
         "total_questions": 150,
         "total_marks": 150,
+        "max_time": 210, # in minutes
     }
 }
 
 LMS_API_HEADERS = {"apiKey": "8209d837743ef9f4b1699ffaa36fe69a", "ORGID": "5735"}
 
-WKHTMLTOPDF_PATH = "C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe"
+WKHTMLTOPDF_PATH = "/usr/local/bin/wkhtmltopdf" # FOR WINDOWS - "C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe"
+
+CUSTOM_TOP_10_STUDENTS_TIME_TAKEN = [random.randint(40, 50) for _ in list(range(0, 10))]
