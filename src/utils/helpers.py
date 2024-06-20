@@ -441,7 +441,7 @@ def generate_front_page(
             ''' for topic in topics_data
         ])}
         <div class="summary2">
-            <h2>Short Analysis</h2>
+            <h2>Swot Analysis</h2>
             <p><strong>Strong Areas:</strong> {strong_areas}</p>
             <p><strong>Weak Areas:</strong> {weak_areas}</p>
         </div>
