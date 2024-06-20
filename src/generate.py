@@ -146,7 +146,7 @@ try:
         sorted_marks = sorted(marks_dict.keys(), reverse=True)
 
         ranked_students = []  # List to store (student_id, rank) tuples
-
+        
         rank = 1  # HARDCODED DATA
         for marks in sorted_marks:
             student_ids = marks_dict[marks]
@@ -1082,12 +1082,15 @@ try:
 
     # Rank
     student_id_to_find = given_student_id  # Example student ID to find rank
+    TotalRanks = len(rank_students())
     rank = find_student_rank(student_id_to_find)
 
     sorted_topics = sorted(topics_data, key=lambda x: x['time_efficiency'], reverse=True)
     top_opportunities = [topic['name'] for topic in sorted_topics[:2]]
     top_threats = [topic['name'] for topic in sorted_topics[-2:]]
 
+    percentile = round((rank*100) / TotalRanks,1)
+    
     # Generate front page HTML dynamically
     front_page_args = {
         "student_name": student_name,
@@ -1099,6 +1102,7 @@ try:
         "minutes": minutes,
         "seconds": seconds,
         "rank": rank,
+        "percentile":percentile,
         "rank1_accuracy": rank1_accuracy,
         "avg_percent": avg_percent,
         "rank1_marks": rank1_marks,
@@ -1136,7 +1140,7 @@ try:
     merger.write("assets/pdfs/final_report.pdf")
     merger.close()
     print("Final report generated successfully.")
-
+   
 except Exception as e:
     print(f"Error: {str(e)}")
     print(traceback.format_exc())
