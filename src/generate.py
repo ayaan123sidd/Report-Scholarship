@@ -315,7 +315,6 @@ try:
         return sorted_user_ids
 
     def custom_visualize_time_taken_top_users():
-        # Get the candidate's data
         candidate_name = get_student_name(given_student_id)
         candidate_time = time_taken_analysis(given_student_id)
         
@@ -324,13 +323,6 @@ try:
         time_taken_students.append(candidate_time)
         time_taken_students.sort(reverse=True)
 
-        # Get the names for the x-axis labels, ensuring the candidate is included
-        student_names = [get_student_name(student_id) for student_id in CUSTOM_TOP_10_STUDENTS_TIME_TAKEN]
-        student_names.append(candidate_name)
-        
-        # Sort the names according to the sorted times
-        sorted_names = [name for _, name in sorted(zip(time_taken_students, student_names), reverse=True)]
-
         fig = plt.figure(figsize=(8, 6))
         ax = fig.add_subplot(111)
 
@@ -338,9 +330,8 @@ try:
         sns.lineplot(ax=ax, x=range(len(time_taken_students)), y=time_taken_students, marker="o")
 
         # Highlight the candidate's point
-        candidate_index = sorted_names.index(candidate_name)
         ax.plot(
-            candidate_index,
+            time_taken_students.index(candidate_time),
             candidate_time,
             "ro",
             label=f"Candidate: ({candidate_name})",
@@ -352,8 +343,7 @@ try:
         ax.set_title("Time Taken Analysis (Top 10 Students)")
         ax.set_xlabel("Students")
         ax.set_ylabel("Time Taken (minutes)")
-        ax.set_xticks(range(len(time_taken_students)))
-        ax.set_xticklabels(sorted_names, rotation=45)
+        ax.set_xticks([])
         ax.legend(loc="best")
         
         return fig
@@ -404,66 +394,6 @@ try:
         # Calculate efficiency within 100%
         efficiency = calculate_time_efficiency(total_marks, marks_scored, max_time, time_taken)
         return efficiency
-
-
-    # def visualize_time_efficiency_top_users():
-    #     sorted_user_ids = sort_users_by_time_taken()
-    #     efficiency_data = {
-    #         get_student_name(student_id): time_efficiency(student_id) or 0
-    #         for student_id in sorted_user_ids
-    #     }
-        
-    #     fig = plt.figure(figsize=(8, 6))
-    #     ax = fig.add_subplot(111)
-    #     sorted_names = list(efficiency_data.keys())
-    #     sorted_values = list(efficiency_data.values())
-
-    #     bars = ax.barh(sorted_names, sorted_values, color="skyblue")
-        
-    #     # Plot for given student
-    #     given_student_name = get_student_name(given_student_id)
-    #     given_student_efficiency = time_efficiency(given_student_id) or 0
-
-    #     given_bar = ax.barh(
-    #         [given_student_name],
-    #         [given_student_efficiency],
-    #         color="red",
-    #         label=f"Candidate: ({given_student_name})",
-    #     )
-    
-    #     # Adding text inside the bars
-    #     for bar in bars:
-    #         width = bar.get_width()
-    #         label_y_pos = bar.get_y() + bar.get_height() / 2
-    #         ax.text(
-    #             width - 0.1,  # Adjust the -0.1 as necessary to ensure text is inside the bar
-    #             label_y_pos,
-    #             f'{width:.2f}%',
-    #             va='center',
-    #             ha='right',
-    #             color='white' if width > 0.1 else 'black'  # Ensure visibility of text
-    #         )
-
-    #     # Adding text for the given student's bar
-    #     for bar in given_bar:
-    #         width = bar.get_width()
-    #         label_y_pos = bar.get_y() + bar.get_height() / 2
-    #         ax.text(
-    #             width - 0.1,  # Adjust the -0.1 as necessary to ensure text is inside the bar
-    #             label_y_pos,
-    #             f'{width:.2f}%',
-    #             va='center',
-    #             ha='right',
-    #             color='white' if width > 0.1 else 'black'  # Ensure visibility of text
-    #         )
-        
-    #     ax.set_title("Time Efficiency Analysis (Top 10 Students)")
-    #     ax.set_xlabel("Time Efficiency (%)")
-    #     ax.set_ylabel("Students")
-    #     ax.legend(loc="best")
-    #     ax.set_yticks([])
-        
-    #     return fig
 
     def visualize_time_efficiency_top_users():
         sorted_user_ids = sort_users_by_time_taken()
