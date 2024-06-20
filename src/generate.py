@@ -878,20 +878,24 @@ try:
         # Create a PDF file to save the plots
 
         bar_height = 0.35
+        bar_offset = bar_height / 2
+        y_positions = np.arange(len(topic_names))
+        correct_positions = y_positions + bar_offset
+        incorrect_positions = y_positions - bar_offset
         plt.figure(figsize=(7, 6))
         bars1 = plt.barh(
-            range(len(topic_names)),
+            correct_positions,
             percentage_correct_topicwise,
             bar_height,
             color="orange",
             label="Correct",
         )
         bars2 = plt.barh(
-            range(len(topic_names)),
+            incorrect_positions,
             percentage_incorrect_topicwise,
             bar_height,
             color="lightcoral",
-            left=percentage_correct_topicwise,  # Stack bars horizontally
+            # left=percentage_correct_topicwise,  # Stack bars horizontally
             label="Incorrect",
         )
 
@@ -916,7 +920,7 @@ try:
         # Set y-tick labels with margin on the right
         plt.yticks(range(len(topic_names)), ytick_labels, fontsize=8, ha="right")
 
-        plt.legend()
+        plt.legend(loc="best")
         plt.xlim(0, 100)  # Adjust the x-axis limit based on your data range
         plt.grid(axis="x", linestyle="--", alpha=0.7)
         plt.tight_layout(pad=3.5)
