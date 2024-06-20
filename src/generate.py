@@ -313,29 +313,51 @@ try:
         sorted_users = sorted(time_dict.items(), key=lambda x: x[1], reverse=True)[:10]
         sorted_user_ids = [user[0] for user in sorted_users]
         return sorted_user_ids
-    
+
     def custom_visualize_time_taken_top_users():
+        # Get the candidate's data
+        candidate_name = get_student_name(given_student_id)
+        candidate_time = time_taken_analysis(given_student_id)
+        
+        # Combine candidate's data with the rest of the students' data
+        time_taken_students = CUSTOM_TOP_10_STUDENTS_TIME_TAKEN.copy()
+        time_taken_students.append(candidate_time)
+        time_taken_students.sort(reverse=True)
+
+        # Get the names for the x-axis labels, ensuring the candidate is included
+        student_names = [get_student_name(student_id) for student_id in CUSTOM_TOP_10_STUDENTS_TIME_TAKEN]
+        student_names.append(candidate_name)
+        
+        # Sort the names according to the sorted times
+        sorted_names = [name for _, name in sorted(zip(time_taken_students, student_names), reverse=True)]
+
         fig = plt.figure(figsize=(8, 6))
         ax = fig.add_subplot(111)
 
+        # Plot the combined data
+        sns.lineplot(ax=ax, x=range(len(time_taken_students)), y=time_taken_students, marker="o")
+
+        # Highlight the candidate's point
+        candidate_index = sorted_names.index(candidate_name)
         ax.plot(
-            [get_student_name(given_student_id)],
-            [time_taken_analysis(given_student_id)],
+            candidate_index,
+            candidate_time,
             "ro",
-            label=f"Candidate: ({get_student_name(given_student_id)})",
+            label=f"Candidate: ({candidate_name})",
         )
-        time_taken_students = CUSTOM_TOP_10_STUDENTS_TIME_TAKEN
-        time_taken_students.sort(reverse=True)
-        sns.lineplot(ax=ax, x=time_taken_students, y=time_taken_students, marker="o")
+
+        # Add max time horizontal line
+        ax.axhline(max_time, color='blue', linestyle='--', label=f'Max Time: {max_time} minutes')
 
         ax.set_title("Time Taken Analysis (Top 10 Students)")
         ax.set_xlabel("Students")
         ax.set_ylabel("Time Taken (minutes)")
-        ax.set_xticks(range(len(CUSTOM_TOP_10_STUDENTS_TIME_TAKEN)))
-        # ax.set_xticklabels(reversed_names, rotation=45)
-        ax.set_xticks([])
-        ax.legend()
+        ax.set_xticks(range(len(time_taken_students)))
+        ax.set_xticklabels(sorted_names, rotation=45)
+        ax.legend(loc="best")
+        
         return fig
+
 
     # Define a function to visualize time taken for top users using seaborn
     def visualize_time_taken_top_users():
@@ -384,65 +406,102 @@ try:
         return efficiency
 
 
+    # def visualize_time_efficiency_top_users():
+    #     sorted_user_ids = sort_users_by_time_taken()
+    #     efficiency_data = {
+    #         get_student_name(student_id): time_efficiency(student_id) or 0
+    #         for student_id in sorted_user_ids
+    #     }
+        
+    #     fig = plt.figure(figsize=(8, 6))
+    #     ax = fig.add_subplot(111)
+    #     sorted_names = list(efficiency_data.keys())
+    #     sorted_values = list(efficiency_data.values())
+
+    #     bars = ax.barh(sorted_names, sorted_values, color="skyblue")
+        
+    #     # Plot for given student
+    #     given_student_name = get_student_name(given_student_id)
+    #     given_student_efficiency = time_efficiency(given_student_id) or 0
+
+    #     given_bar = ax.barh(
+    #         [given_student_name],
+    #         [given_student_efficiency],
+    #         color="red",
+    #         label=f"Candidate: ({given_student_name})",
+    #     )
+    
+    #     # Adding text inside the bars
+    #     for bar in bars:
+    #         width = bar.get_width()
+    #         label_y_pos = bar.get_y() + bar.get_height() / 2
+    #         ax.text(
+    #             width - 0.1,  # Adjust the -0.1 as necessary to ensure text is inside the bar
+    #             label_y_pos,
+    #             f'{width:.2f}%',
+    #             va='center',
+    #             ha='right',
+    #             color='white' if width > 0.1 else 'black'  # Ensure visibility of text
+    #         )
+
+    #     # Adding text for the given student's bar
+    #     for bar in given_bar:
+    #         width = bar.get_width()
+    #         label_y_pos = bar.get_y() + bar.get_height() / 2
+    #         ax.text(
+    #             width - 0.1,  # Adjust the -0.1 as necessary to ensure text is inside the bar
+    #             label_y_pos,
+    #             f'{width:.2f}%',
+    #             va='center',
+    #             ha='right',
+    #             color='white' if width > 0.1 else 'black'  # Ensure visibility of text
+    #         )
+        
+    #     ax.set_title("Time Efficiency Analysis (Top 10 Students)")
+    #     ax.set_xlabel("Time Efficiency (%)")
+    #     ax.set_ylabel("Students")
+    #     ax.legend(loc="best")
+    #     ax.set_yticks([])
+        
+    #     return fig
+
     def visualize_time_efficiency_top_users():
         sorted_user_ids = sort_users_by_time_taken()
         efficiency_data = {
-            get_student_name(student_id): time_efficiency(student_id) or 0
+            get_student_name(student_id): time_efficiency(student_id)
             for student_id in sorted_user_ids
         }
-        
         fig = plt.figure(figsize=(8, 6))
         ax = fig.add_subplot(111)
         sorted_names = list(efficiency_data.keys())
         sorted_values = list(efficiency_data.values())
-
-        bars = ax.barh(sorted_names, sorted_values, color="skyblue")
-        
+        ax.barh(sorted_names, sorted_values, color="skyblue")
         # Plot for given student
         given_student_name = get_student_name(given_student_id)
-        given_student_efficiency = time_efficiency(given_student_id) or 0
-
-        given_bar = ax.barh(
+        given_student_efficiency = time_efficiency(given_student_id)
+        ax.barh(
             [given_student_name],
             [given_student_efficiency],
             color="red",
             label=f"Candidate: ({given_student_name})",
         )
-    
-        # Adding text inside the bars
-        for bar in bars:
-            width = bar.get_width()
-            label_y_pos = bar.get_y() + bar.get_height() / 2
-            ax.text(
-                width - 0.1,  # Adjust the -0.1 as necessary to ensure text is inside the bar
-                label_y_pos,
-                f'{width:.2f}%',
-                va='center',
-                ha='right',
-                color='white' if width > 0.1 else 'black'  # Ensure visibility of text
-            )
-
-        # Adding text for the given student's bar
-        for bar in given_bar:
-            width = bar.get_width()
-            label_y_pos = bar.get_y() + bar.get_height() / 2
-            ax.text(
-                width - 0.1,  # Adjust the -0.1 as necessary to ensure text is inside the bar
-                label_y_pos,
-                f'{width:.2f}%',
-                va='center',
-                ha='right',
-                color='white' if width > 0.1 else 'black'  # Ensure visibility of text
-            )
-        
-        ax.set_title("Time Efficiency Analysis (Top 10 Students)")
+        xPos = "right" if (given_student_efficiency - 0.5) > 25 else "left"
+        ax.text(
+            given_student_efficiency - 0.5,
+            given_student_name,
+            f"{given_student_efficiency:.2f}%",
+            color="black",
+            va="center",
+            ha=xPos,
+        )  # Write value inside the bar
+        ax.set_title("Time Efficiency Analysis (Top 10 Users)")
         ax.set_xlabel("Time Efficiency (%)")
         ax.set_ylabel("Students")
         # ax.legend(loc='upper left', bbox_to_anchor=(0.5, -0.25))
         ax.legend(loc='best')
         ax.set_yticks([])
-        
         return fig
+
 
     def visualize_points_percentage_top_users():
         sorted_user_ids = sort_users_by_max_marks()
@@ -1001,14 +1060,14 @@ try:
         # fig = visualize_time_taken_top_users()
         fig = custom_visualize_time_taken_top_users()
         # Add description
-        plt.text(
-            0.5,
-            0.01,
-            "This graph compares the students time taken analysis against the top 10 Students.",
-            ha="center",
-            fontsize=10,
-            transform=fig.transFigure,
-        )
+        # plt.text(
+        #     0.5,
+        #     0.01,
+        #     "This graph compares the students time taken analysis against the top 10 Students.",
+        #     ha="center",
+        #     fontsize=10,
+        #     transform=fig.transFigure,
+        # )
         pdf.savefig(fig, bbox_inches="tight", pad_inches=0.6)
         plt.close(fig)
 
