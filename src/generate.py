@@ -1084,6 +1084,11 @@ try:
     student_id_to_find = given_student_id  # Example student ID to find rank
     TotalRanks = len(rank_students())
     rank = find_student_rank(student_id_to_find)
+
+    sorted_topics = sorted(topics_data, key=lambda x: x['time_efficiency'], reverse=True)
+    top_opportunities = [topic['name'] for topic in sorted_topics[:2]]
+    top_threats = [topic['name'] for topic in sorted_topics[-2:]]
+
     percentile = round((rank*100) / TotalRanks,1)
     
     # Generate front page HTML dynamically
@@ -1111,6 +1116,8 @@ try:
         "weak_areas": weak_areas,
         "passing_result": passing_result,
         "topics_data": topics_data,
+        "top_opportunities": top_opportunities,
+        "top_threats": top_threats,
     }
 
     html_content1 = generate_front_page(**front_page_args)
