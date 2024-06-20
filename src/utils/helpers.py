@@ -119,7 +119,7 @@ def generate_front_page(
     passing_result,
     topics_data,
     top_opportunities,
-    top_threats,
+    top_threats
 ):
 
     summary_to_display = get_summary_to_display(percent)
@@ -443,7 +443,6 @@ def generate_front_page(
             <p>Correct Answers: {topic.get("correct_counts")} out of {topic.get("total")} ({topic.get("correct_percentage"):.1f}%)</p>
             <p>Incorrect Answers: {topic.get("incorrect_counts")} out of {topic.get("total")} ({topic.get("incorrect_percentage"):.1f}%)</p>
             <p>Unattempted: {topic.get("unattempted_counts")} out of {topic.get("total")} ({topic.get("unattempted_percentage"):.1f}%)</p>
-            <p>{topic.get("time_efficiency")}</p>
             </div>
             ''' for i, topic in enumerate(topics_data)
         ])}
@@ -451,7 +450,7 @@ def generate_front_page(
             <h2>SWOT Analysis</h2>
             <p><strong>Strong Areas:</strong> {strong_areas}</p>
             <p><strong>Weak Areas:</strong> {weak_areas}</p>
-            <p><strong>Opportunities:</strong>Topics <b><i>{top_opportunities[0]}</i></b> and <b><i>{top_opportunities[1]}</i></b> demonstrate high time efficiency scores, showing strong proficiency and potential for further mastery. This indicates efficient time management and deep understanding. Focusing on these topics can lead to advanced learning and higher scores through exploring related concepts and refining problem-solving skills.</p>
+            <p><strong>Opportunities:</strong>Topics <b><i> {top_opportunities[0]}</i></b> and <b><i>{top_opportunities[1]}</i></b> demonstrate high time efficiency scores, showing strong proficiency and potential for further mastery. This indicates efficient time management and deep understanding. Focusing on these topics can lead to advanced learning and higher scores through exploring related concepts and refining problem-solving skills.</p>
             <p><strong>Threat:</strong> However, <b><i>{top_threats[0]}</i></b> and <b><i>{top_threats[1]}</i></b> exhibit lower time efficiency scores, suggesting challenges in time management or understanding. To improve, prioritize enhancing time management skills, breaking down complex topics, and seeking additional study resources. Addressing these areas will enhance efficiency and comprehension, leading to better performance in assessments.</p>
         </div>
     </div>
