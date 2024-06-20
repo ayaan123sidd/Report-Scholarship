@@ -760,10 +760,10 @@ try:
 
         # Split y-tick labels into two lines after a certain character limit
         ytick_labels = [
-            label[:10] + "\n" + label[10:] if len(label) > 10 else label
-            for label in topic_names
+        (label.split(' ', 1)[0] + "\n" + label.split(' ', 1)[1]).upper() if ' ' in label else label.upper()
+        for label in topic_names
         ]
-
+        ytick_labels = [label.upper() for label in ytick_labels]
         # Set y-tick labels with margin on the top
         plt.yticks(
             range(len(topic_names)), ytick_labels, rotation=0, ha="right", fontsize=8
@@ -795,9 +795,10 @@ try:
 
         # Set y-tick labels in uppercase and split into two lines after a certain character limit
         ytick_labels = [
-            label[:12] + "\n" + label[12:] if len(label) > 12 else label
-            for label in topic_names
+        (label.split(' ', 1)[0] + "\n" + label.split(' ', 1)[1]).upper() if ' ' in label else label.upper()
+        for label in topic_names
         ]
+        ytick_labels = [label.upper() for label in ytick_labels]
 
         # Set y-tick labels with margin on the right
         plt.yticks(
@@ -926,8 +927,8 @@ try:
 
         # Split y-tick labels into two lines after a certain character limit and make them uppercase
         ytick_labels = [
-            label[:10] + "\n" + label[10:] if len(label) > 10 else label
-            for label in topic_names
+        (label.split(' ', 1)[0] + "\n" + label.split(' ', 1)[1]).upper() if ' ' in label else label.upper()
+        for label in topic_names
         ]
         ytick_labels = [label.upper() for label in ytick_labels]
 
@@ -1057,7 +1058,7 @@ try:
     rank1_accuracy = 99
     rank1_marks = 49
     rank1_time_taken = 25
-    rank1_time_efficiency = 90
+    rank1_time_efficiency = 86.1
 
     # Define average data (example data)
     avg_accuracy = average_accuracy()
