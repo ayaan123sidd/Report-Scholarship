@@ -315,7 +315,6 @@ try:
         return sorted_user_ids
 
     def custom_visualize_time_taken_top_users():
-        # Get the candidate's data
         candidate_name = get_student_name(given_student_id)
         candidate_time = time_taken_analysis(given_student_id)
         
@@ -324,13 +323,6 @@ try:
         time_taken_students.append(candidate_time)
         time_taken_students.sort(reverse=True)
 
-        # Get the names for the x-axis labels, ensuring the candidate is included
-        student_names = [get_student_name(student_id) for student_id in CUSTOM_TOP_10_STUDENTS_TIME_TAKEN]
-        student_names.append(candidate_name)
-        
-        # Sort the names according to the sorted times
-        sorted_names = [name for _, name in sorted(zip(time_taken_students, student_names), reverse=True)]
-
         fig = plt.figure(figsize=(8, 6))
         ax = fig.add_subplot(111)
 
@@ -338,9 +330,8 @@ try:
         sns.lineplot(ax=ax, x=range(len(time_taken_students)), y=time_taken_students, marker="o")
 
         # Highlight the candidate's point
-        candidate_index = sorted_names.index(candidate_name)
         ax.plot(
-            candidate_index,
+            time_taken_students.index(candidate_time),
             candidate_time,
             "ro",
             label=f"Candidate: ({candidate_name})",
@@ -352,8 +343,7 @@ try:
         ax.set_title("Time Taken Analysis (Top 10 Users)")
         ax.set_xlabel("Students")
         ax.set_ylabel("Time Taken (minutes)")
-        ax.set_xticks(range(len(time_taken_students)))
-        ax.set_xticklabels(sorted_names, rotation=45)
+        ax.set_xticks([])
         ax.legend(loc="best")
         
         return fig
