@@ -18,7 +18,7 @@ from utils.helpers import (
     calculate_passing_probability,
     calculate_time_efficiency,
 )
-from utils.constants import LMS_API_HEADERS, WKHTMLTOPDF_PATH, SUBJECT_DATA
+from utils.constants import LMS_API_HEADERS, WKHTMLTOPDF_PATH, SUBJECT_DATA, CUSTOM_TOP_10_STUDENTS_TIME_TAKEN
 import traceback
 
 
@@ -58,6 +58,7 @@ try:
         raise Exception("Subject data not found")
 
     topics = subject_data.get("topics", [])
+    max_time = subject_data.get("max_time", 60)
 
     # Extract the total questions for each topic
     topic_question_idx = 0
@@ -94,11 +95,9 @@ try:
         # Calculate time efficiency for the topic
         max_marks = total  
         marks_scored = total_marks
-        max_time = 360  
         time_taken = avg_time_taken 
 
         efficiency = calculate_time_efficiency(max_marks, marks_scored, max_time, time_taken)
-
 
         topics_data.append(
             {
@@ -286,11 +285,14 @@ try:
     # Define a function to analyze marks for a given student
     def marks_analysis2(student_id):
         marks_data = extract_marks(student_id)
-        if marks_data:
-            max_marks = max(int(mark.get("mk") or 0) for mark in marks_data)
-            total_marks = sum(int(mark.get("tm") or 0) for mark in marks_data)
-            return max_marks, total_marks
-        return None
+
+        if not marks_data:
+            return 0, 0
+
+        marks_scored = sum(int(mark.get("mk", 0) or 0) for mark in marks_data)
+        total_marks = sum(int(mark.get("tm", 0) or 0) for mark in marks_data)
+        return marks_scored, total_marks
+
 
     def points_percentage_analysis(student_id):
         marks_data = extract_marks(student_id)
@@ -311,6 +313,29 @@ try:
         sorted_users = sorted(time_dict.items(), key=lambda x: x[1], reverse=True)[:10]
         sorted_user_ids = [user[0] for user in sorted_users]
         return sorted_user_ids
+    
+    def custom_visualize_time_taken_top_users():
+        fig = plt.figure(figsize=(8, 6))
+        ax = fig.add_subplot(111)
+
+        ax.plot(
+            [get_student_name(given_student_id)],
+            [time_taken_analysis(given_student_id)],
+            "ro",
+            label=f"Candidate: ({get_student_name(given_student_id)})",
+        )
+        time_taken_students = CUSTOM_TOP_10_STUDENTS_TIME_TAKEN
+        time_taken_students.sort(reverse=True)
+        sns.lineplot(ax=ax, x=time_taken_students, y=time_taken_students, marker="o")
+
+        ax.set_title("Time Taken Analysis (Top 10 Users)")
+        ax.set_xlabel("Students")
+        ax.set_ylabel("Time Taken (minutes)")
+        ax.set_xticks(range(len(CUSTOM_TOP_10_STUDENTS_TIME_TAKEN)))
+        # ax.set_xticklabels(reversed_names, rotation=45)
+        ax.set_xticks([])
+        ax.legend()
+        return fig
 
     # Define a function to visualize time taken for top users using seaborn
     def visualize_time_taken_top_users():
@@ -351,22 +376,16 @@ try:
         marks_data = marks_analysis2(student_id)
         if marks_data is None:
             return None
-        marks, total_marks = marks_data
-        if total_marks == 0:
-            return None  # or return 0 or any other value as appropriate
-
-        # Normalize marks and time taken
-        normalized_marks = marks / 50  # Maximum marks
-        normalized_time_taken = (
-            time_taken_analysis(student_id) / 60
-        )  # Maximum time taken
+        marks_scored, total_marks = marks_data
+        time_taken = time_taken_analysis(student_id)
 
         # Calculate efficiency within 100%
-        efficiency = (normalized_marks + (1 - normalized_time_taken)) * 50
+        efficiency = calculate_time_efficiency(total_marks, marks_scored, max_time, time_taken)
         return efficiency
 
+
     def time_efficiency_for_current_student():
-        return sum(marks.get("time_efficiency") for marks in topics_data)
+        return sum(marks.get("time_efficiency") for marks in topics_data) / len(topics_data)
 
 
     def visualize_time_efficiency_top_users():
@@ -977,7 +996,10 @@ try:
         )
         pdf.savefig(fig, bbox_inches="tight", pad_inches=0.6)
         plt.close(fig)
-        fig = visualize_time_taken_top_users()
+
+
+        # fig = visualize_time_taken_top_users()
+        fig = custom_visualize_time_taken_top_users()
         # Add description
         plt.text(
             0.5,
@@ -1064,11 +1086,7 @@ try:
     seconds = int((time_taken - minutes) * 60)
 
     perc = marks * 100 / 50  # HARDCODED DATA (magic values)
-    # time_efficiency2 = time_efficiency(90577321)
-    time_efficiencyx = (
-        marks * time_taken * 100 / (60 * 50)
-    )  # HARDCODED DATA (magic values)
-    time_efficiency2 = "{:.2f}".format(time_efficiencyx)
+    time_efficiency2 = "{:.2f}".format(time_efficiency_for_current_student())
 
     # Rank
     student_id_to_find = given_student_id  # Example student ID to find rank
