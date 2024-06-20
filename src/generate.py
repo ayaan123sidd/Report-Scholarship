@@ -328,7 +328,7 @@ try:
         time_taken_students.sort(reverse=True)
         sns.lineplot(ax=ax, x=time_taken_students, y=time_taken_students, marker="o")
 
-        ax.set_title("Time Taken Analysis (Top 10 Users)")
+        ax.set_title("Time Taken Analysis (Top 10 Students)")
         ax.set_xlabel("Students")
         ax.set_ylabel("Time Taken (minutes)")
         ax.set_xticks(range(len(CUSTOM_TOP_10_STUDENTS_TIME_TAKEN)))
@@ -438,7 +438,8 @@ try:
         ax.set_title("Time Efficiency Analysis (Top 10 Students)")
         ax.set_xlabel("Time Efficiency (%)")
         ax.set_ylabel("Students")
-        ax.legend(loc="best")
+        # ax.legend(loc='upper left', bbox_to_anchor=(0.5, -0.25))
+        ax.legend(loc='best')
         ax.set_yticks([])
         
         return fig
