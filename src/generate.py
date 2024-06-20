@@ -816,8 +816,8 @@ try:
         plt.figtext(
             0.5, 0.01, summary, wrap=True, ha="center", fontsize=8
         )  # Adjust figtext position for summary
-
-        pdf.savefig(pad_inches=(20, 20, 20, 20))  # Adjust page size here
+        plt.subplots_adjust(bottom=0.15)
+        pdf.savefig(bbox_inches="tight", pad_inches=0.3)
         plt.close()
 
         # Plot Pie Chart for Percentage Correct, Incorrect, and Unattempted Questions
@@ -945,7 +945,8 @@ try:
         plt.tight_layout(pad=3.5)
 
         summary = "THIS GRAPH INDICATES THE PERCENTAGE OF CORRECT AND INCORRECT ANSWERS FOR EACH TOPIC."  # Summary in uppercase
-        plt.figtext(0.5, 0.01, summary, wrap=True, ha="center", fontsize=8)
+        plt.figtext(0.5, 0.04, summary, wrap=True, ha="center", fontsize=8)
+        plt.subplots_adjust(bottom=0.20)
         pdf.savefig(pad_inches=(20, 20, 20, 20))  # Adjust page size here
         plt.close()
 
@@ -995,7 +996,8 @@ try:
             fontsize=10,
             transform=fig.transFigure,
         )
-        pdf.savefig(fig, bbox_inches="tight", pad_inches=0.6)
+        plt.subplots_adjust(bottom=0.15)
+        pdf.savefig(fig, bbox_inches="tight", pad_inches=0.3)
         plt.close(fig)
 
 
@@ -1023,7 +1025,8 @@ try:
             fontsize=10,
             transform=fig.transFigure,
         )
-        pdf.savefig(fig, bbox_inches="tight", pad_inches=0.6)
+        plt.subplots_adjust(bottom=0.15)
+        pdf.savefig(fig, bbox_inches="tight", pad_inches=0.3)
         plt.close(fig)
 
         # Set the page size of the PDF to 10x10 inches
