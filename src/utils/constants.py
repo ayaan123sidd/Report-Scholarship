@@ -105,6 +105,7 @@ SUBJECT_DATA = {
         "total_marks": 150,
     }
 }
+
 LMS_API_HEADERS = {"apiKey": "8209d837743ef9f4b1699ffaa36fe69a", "ORGID": "5735"}
 
 WKHTMLTOPDF_PATH = "/usr/local/bin/wkhtmltopdf"
