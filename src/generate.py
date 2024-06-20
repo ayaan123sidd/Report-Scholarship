@@ -838,7 +838,9 @@ try:
         plt.figtext(
             0.5, 0.01, summary, wrap=True, ha="center", fontsize=8
         )  # Adjust figtext position for summary
-        pdf.savefig(pad_inches=(20, 20, 20, 20))  # Adjust page size here
+        # pdf.savefig(pad_inches=(20, 20, 20, 20)) 
+        plt.subplots_adjust(bottom=0.15)
+        pdf.savefig(bbox_inches="tight", pad_inches=0.3)
         plt.close()
 
         plt.figure(figsize=(7, 6))
