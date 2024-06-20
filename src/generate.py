@@ -895,7 +895,6 @@ try:
             percentage_incorrect_topicwise,
             bar_height,
             color="lightcoral",
-            # left=percentage_correct_topicwise,  # Stack bars horizontally
             label="Incorrect",
         )
 
