@@ -50,6 +50,14 @@ def calculate_counts(marks):
     return total, correct, incorrect, unattempted, correct_percentage, incorrect_percentage, unattempted_percentage
 
 
+def calculate_time_efficiency(max_marks, marks_scored, max_time, time_taken):
+    if marks_scored==0 and time_taken == 0:
+        efficiency = 0
+    else:
+        efficiency = (marks_scored / max_marks * 0.7 + (1 - time_taken / max_time) * 0.3) * 100
+    return round(efficiency)
+
+
 # Passing probability
 def calculate_passing_probability(score):
     if score > 80:
@@ -105,38 +113,6 @@ def generate_front_page(
     average_time_taken,
     rank1_time_efficiency,
     avg_time_efficiency,
-    # pharmaceutical_chemistry_avg_time,
-    # pharmaceutical_chemistry_correct,
-    # pharmaceutical_chemistry_total,
-    # pharmaceutical_chemistry_correct_percentage,
-    # pharmaceutical_chemistry_incorrect,
-    # pharmaceutical_chemistry_incorrect_percentage,
-    # pharmaceutical_chemistry_unattempted,
-    # pharmaceutical_chemistry_unattempted_percentage,
-    # pharmacology_avg_time,
-    # pharmacology_correct,
-    # pharmacology_total,
-    # pharmacology_correct_percentage,
-    # pharmacology_incorrect,
-    # pharmacology_incorrect_percentage,
-    # pharmacology_unattempted,
-    # pharmacology_unattempted_percentage,
-    # physiology_avg_time,
-    # physiology_correct,
-    # physiology_total,
-    # physiology_correct_percentage,
-    # physiology_incorrect,
-    # physiology_incorrect_percentage,
-    # physiology_unattempted,
-    # physiology_unattempted_percentage,
-    # pharmaceutics_and_therapeutics_avg_time,
-    # pharmaceutics_and_therapeutics_correct,
-    # pharmaceutics_and_therapeutics_total,
-    # pharmaceutics_and_therapeutics_correct_percentage,
-    # pharmaceutics_and_therapeutics_incorrect,
-    # pharmaceutics_and_therapeutics_incorrect_percentage,
-    # pharmaceutics_and_therapeutics_unattempted,
-    # pharmaceutics_and_therapeutics_unattempted_percentage,
     strong_areas,
     weak_areas,
     passing_result,
@@ -257,7 +233,7 @@ def generate_front_page(
             }}
             .how{{
                  text-align: justify;
-                margin-top:30px;
+                margin-top:25px;
                 padding: 0px 70px;
                 padding-top:20px;
                 font-size:18px;
@@ -268,7 +244,7 @@ def generate_front_page(
             }}
             .descl{{
                 text-align: justify;
-                margin-top:350px;
+                margin-top: 50px;
                 padding: 0px 70px;
                 color:gray;
                 padding-bottom:50px
@@ -291,7 +267,7 @@ def generate_front_page(
             }}
             .passprob{{
                 text-align: justify;
-                margin-top:50px;
+                margin-top:40px;
                 padding: 0px 70px;
                 padding-top:50px
             }}
@@ -434,7 +410,7 @@ def generate_front_page(
             </div>
 
              <div class="summary" id="summary3" style="display:{'block' if summary_to_display == 3 else 'none'};" >
-                <h3>Student Summary3</h3>
+                <h3>Student Summary</h3>
                 <ul>
                 <li>
                 <p>The student exhibited below-average performance in the online scholarship test with an accuracy rate of <strong>{accuracy}%</strong>, indicating challenges in both accuracy and time management. 
@@ -454,52 +430,52 @@ def generate_front_page(
         <h1 class='generative'>AI-Powered Assessment</h1>
         <p><em>AI-Generated Comprehensive Test Analysis.</em></p>
         {''.join([
-            f"""
+            f'''
             <div class="summary2">
                 <h2>{topic.get("name")}</h2>
-                <p>Average Time per Question: {topic.get("avg_time"):.1f} seconds</p>
+                <p>Average Time per Question: {float(topic.get("avg_time", 0.0)):.1f} seconds</p>
                 <p>Correct Answers: {topic.get("correct_counts")} out of {topic.get("total")} ({topic.get("correct_percentage"):.1f}%)</p>
                 <p>Incorrect Answers: {topic.get("incorrect_counts")} out of {topic.get("total")} ({topic.get("incorrect_percentage"):.1f}%)</p>
                 <p>Unattempted: {topic.get("unattempted_counts")} out of {topic.get("total")} ({topic.get("unattempted_percentage"):.1f}%)</p>
             </div>
-            """ for topic in topics_data
+            ''' for topic in topics_data
         ])}
         <div class="summary2">
-            <h2>Strengths and Weaknesses</h2>
+            <h2>Sort Analysis</h2>
             <p><strong>Strong Areas:</strong> {strong_areas}</p>
             <p><strong>Weak Areas:</strong> {weak_areas}</p>
         </div>
-
     </div>
-    <div class="note">
-                <h4>Note</h4>
-                <ul>
-                <li>
-                <p>Graphs Provided: The report includes various graphs that visualize data related to the student's performance. These graphs represent different metrics such as accuracy, marks obtained, time taken, or other relevant factors.</p>
-                </li>
-                <li>
-                <p>Analysis: The graphs are not just visual representations of data; they are the result of an analysis process. This analysis involves interpreting the student's performance data in comparison to the performance data of other users.</p>
-                </li>
-                <li>
-                <p>Comparison to Top 10 Users: The analysis specifically compares the student's performance to that of the top 10 users. This comparison provides valuable insights into how the student's performance measures up against the top performers in the given context.</p>
-                </li>
-                <li>
-                <p>Purpose: The purpose of this analysis is to evaluate the student's performance relative to a high-performing group. By comparing the student to the top 10 users, the report aims to identify areas of strength and areas for improvement for the student.</p>
-                </li>
-                </ul>
-            </div>
-        </div>
+    </div>
         
-        
-        <div class="passprob">
-            <h2>Passing Probability</h2>
-            <div>Based on your performance in the scholarship mock test, your estimated probability of passing the actual exam is <span class="pp" >{passing_result}%</span>. While this probability is derived from a detailed analysis of your mock test scores and may not fully reflect your potential, at Academically, we are committed to helping you surpass expectations and realize your aspirations. We'll collaborate closely to enhance your preparation and ensure you're primed for success on exam day.</div>
-        </div>
+    <div class="passprob">
+        <h2>Passing Probability</h2>
+        <div>Based on your performance in the scholarship mock test, your estimated probability of passing the actual exam is <span class="pp" >{passing_result}%</span>. While this probability is derived from a detailed analysis of your mock test scores and may not fully reflect your potential, at Academically, we are committed to helping you surpass expectations and realize your aspirations. We'll collaborate closely to enhance your preparation and ensure you're primed for success on exam day.</div>
+    </div>
 
-        <div class="how">
+    <div class="how">
         <h2>How <span style="color:#103AC5;font-weight:700">Academically</span> Can Help You Succeed:</h2> At<span style="color:#103AC5;font-weight:700"> Academically</span>, we are committed to helping you excel in your exam preparation. We offer a comprehensive suite of resources designed to enhance your learning experience and boost your chances of success. Our offerings include live interactive lectures with experienced instructors frm around the world, a wide range of mock exams to simulate the actual test environment, detailed study handouts that cover all essential topics, and much more. Our goal is to provide you with the tools and support you need to confidently approach your exam and achieve outstanding results. Join us at <span style="color:#103AC5;font-weight:700">Academically</span> and take the next step towards your academic success.
-        </div>
+    </div>
         
+    <div class="note">
+        <h4>Note</h4>
+        <ul>
+        <li>
+        <p>Graphs Provided: The report includes various graphs that visualize data related to the student's performance. These graphs represent different metrics such as accuracy, marks obtained, time taken, or other relevant factors.</p>
+        </li>
+        <li>
+        <p>Analysis: The graphs are not just visual representations of data; they are the result of an analysis process. This analysis involves interpreting the student's performance data in comparison to the performance data of other users.</p>
+        </li>
+        <li>
+        <p>Comparison to Top 10 Users: The analysis specifically compares the student's performance to that of the top 10 users. This comparison provides valuable insights into how the student's performance measures up against the top performers in the given context.</p>
+        </li>
+        <li>
+        <p>Purpose: The purpose of this analysis is to evaluate the student's performance relative to a high-performing group. By comparing the student to the top 10 users, the report aims to identify areas of strength and areas for improvement for the student.</p>
+        </li>
+        </ul>
+    </div>
+
+
         <div class="descl">
             <h4>Disclaimer:</h4>
             <ul>
