@@ -228,13 +228,13 @@ def generate_front_page(
             }}
             .note{{
                 text-align: justify;
-                margin-top: 50px;
+                margin-top: 300px;
                 padding: 0px 70px;
                 padding-top: 50px;
             }}
             .how{{
                  text-align: justify;
-                margin-top:25px;
+                margin-top:120px;
                 padding: 0px 70px;
                 padding-top:20px;
                 font-size:18px;
@@ -431,14 +431,14 @@ def generate_front_page(
         <p><em>AI-Generated Comprehensive Test Analysis.</em></p>
         {''.join([
             f'''
-            <div class="summary2">
-                <h2>{topic.get("name")}</h2>
-                <p>Average Time per Question: {float(topic.get("avg_time", 0.0)):.1f} seconds</p>
-                <p>Correct Answers: {topic.get("correct_counts")} out of {topic.get("total")} ({topic.get("correct_percentage"):.1f}%)</p>
-                <p>Incorrect Answers: {topic.get("incorrect_counts")} out of {topic.get("total")} ({topic.get("incorrect_percentage"):.1f}%)</p>
-                <p>Unattempted: {topic.get("unattempted_counts")} out of {topic.get("total")} ({topic.get("unattempted_percentage"):.1f}%)</p>
+            <div class="summary2" style="{'padding-bottom: 150px;' if i == 5 else ''}">
+            <h2>{topic.get("name")}</h2>
+            <p>Average Time per Question: {float(topic.get("avg_time", 0.0)):.1f} seconds</p>
+            <p>Correct Answers: {topic.get("correct_counts")} out of {topic.get("total")} ({topic.get("correct_percentage"):.1f}%)</p>
+            <p>Incorrect Answers: {topic.get("incorrect_counts")} out of {topic.get("total")} ({topic.get("incorrect_percentage"):.1f}%)</p>
+            <p>Unattempted: {topic.get("unattempted_counts")} out of {topic.get("total")} ({topic.get("unattempted_percentage"):.1f}%)</p>
             </div>
-            ''' for topic in topics_data
+            ''' for i, topic in enumerate(topics_data)
         ])}
         <div class="summary2">
             <h2>Swot Analysis</h2>

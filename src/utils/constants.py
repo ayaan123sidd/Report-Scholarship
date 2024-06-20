@@ -21,7 +21,7 @@ SUBJECT_DATA = {
                 "total_questions": "5",
             },
             {
-                "name": "Biopharmaceutics AND Calculations",
+                "name": "Biopharmaceutics And Calculations",
                 "total_questions": "5",
             },
             {
@@ -41,15 +41,15 @@ SUBJECT_DATA = {
                 "total_questions": "5",
             },
             {
-                "name": "ANTIMICROBIALS, ANTI-CANCER, TOXICOLOGY",
+                "name": "Antimicrobials, Anti-Cancer, Toxicology",
                 "total_questions": "5",
             },
             {
-                "name": "ENDOCRINOLOGY",
+                "name": "Endocrinology",
                 "total_questions": "5",
             },
             {
-                "name": "CHEMISTRY",
+                "name": "Chemistry",
                 "total_questions": "5",
             }
         ],
