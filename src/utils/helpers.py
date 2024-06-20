@@ -311,7 +311,7 @@ def generate_front_page(
                 <p><strong>Percentile of Student: </strong> {percentile} %</p>
                 <p><strong>Rank of Student: </strong> {rank}</p>
                 {'<p class="equal"><em><strong>Note: </strong>Percentage and accuracy are equal because the student attempted all questions.</em></p>' if percent == accuracy else ''}
-                <p class="equal"><em><strong>Percentile </strong>The student is above {percentile}% of the test users</em></p>
+                <p class="equal"><em><strong>Percentile: </strong>The student is above {percentile}% of the test users</em></p>
             </div>
             </div>
            
@@ -441,6 +441,7 @@ def generate_front_page(
             <p>Correct Answers: {topic.get("correct_counts")} out of {topic.get("total")} ({topic.get("correct_percentage"):.1f}%)</p>
             <p>Incorrect Answers: {topic.get("incorrect_counts")} out of {topic.get("total")} ({topic.get("incorrect_percentage"):.1f}%)</p>
             <p>Unattempted: {topic.get("unattempted_counts")} out of {topic.get("total")} ({topic.get("unattempted_percentage"):.1f}%)</p>
+            <p>{topic.get("time_efficiency")}</p>
             </div>
             ''' for i, topic in enumerate(topics_data)
         ])}
