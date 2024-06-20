@@ -360,7 +360,7 @@ try:
 
         sns.lineplot(ax=ax, x=reversed_names, y=reversed_data, marker="o")
 
-        ax.set_title("Time Taken Analysis (Top 10 Users)")
+        ax.set_title("Time Taken Analysis (Top 10 Students)")
         ax.set_xlabel("Students")
         ax.set_ylabel("Time Taken (minutes)")
         ax.set_xticks(range(len(time_data)))
@@ -439,7 +439,7 @@ try:
                 color='white' if width > 0.1 else 'black'  # Ensure visibility of text
             )
         
-        ax.set_title("Time Efficiency Analysis (Top 10 Users)")
+        ax.set_title("Time Efficiency Analysis (Top 10 Students)")
         ax.set_xlabel("Time Efficiency (%)")
         ax.set_ylabel("Students")
         ax.legend(loc="best")
@@ -465,7 +465,7 @@ try:
             color="red",
             label=f"Candidate: ({get_student_name(given_student_id)})",
         )
-        ax.set_title("Points Percentage Analysis (Top 10 Users)")
+        ax.set_title("Points Percentage Analysis (Top 10 Students)")
         ax.set_xlabel("Students")
         ax.set_ylabel("Points Percentage")
         ax.set_xticks([])
@@ -502,7 +502,7 @@ try:
             color="black",
             va="center",
         )  # Write value inside the bar
-        ax.set_title("Marks Analysis (Top 10 Users)")
+        ax.set_title("Marks Analysis (Top 10 Students)")
         ax.set_xlabel("Marks Obtained")
         ax.set_ylabel("Top 10 Student")
         ax.legend()
@@ -549,7 +549,7 @@ try:
             label=f"Candidate: ({get_student_name(given_student_id)})",
         )
 
-        ax.set_title("Accuracy Analysis (Top 10 Users)")
+        ax.set_title("Accuracy Analysis (Top 10 Students)")
         ax.set_xlabel("Students")
         ax.set_ylabel("Accuracy (%)")
         ax.set_xticks([])
@@ -591,7 +591,7 @@ try:
             sorted_names, sorted_values, linestyle="--", color="grey"
         )  # Dotted line, grey color
 
-        ax.set_title("Accuracy Analysis (Top 10 Users)")
+        ax.set_title("Accuracy Analysis (Top 10 Students)")
         ax.set_xlabel("Students")
         ax.set_ylabel("Accuracy (%)")
         ax.set_xticks([])
@@ -638,7 +638,7 @@ try:
             label=f"Candidate: ({get_student_name(given_student_id)})",
         )
 
-        ax.set_title("Percentage Analysis (Top 10 Users)")
+        ax.set_title("Percentage Analysis (Top 10 Students)")
         ax.set_xlabel("Students")
         ax.set_ylabel("Accuracy (%)")
         ax.set_xticks([])
@@ -974,7 +974,7 @@ try:
         plt.text(
             0.5,
             0.01,
-            "This graph compares the students marks based percent analysis against the top 10 users. ",
+            "This graph compares the students marks based percent analysis against the top 10 Students. ",
             ha="center",
             fontsize=10,
             transform=fig.transFigure,
@@ -989,7 +989,7 @@ try:
         plt.text(
             0.5,
             0.01,
-            "This graph displays the students marks analysis against the top 10 users.",
+            "This graph displays the students marks analysis against the top 10 Students.",
             ha="center",
             fontsize=10,
             transform=fig.transFigure,
@@ -1004,7 +1004,7 @@ try:
         plt.text(
             0.5,
             0.01,
-            "This graph compares the students time taken analysis against the top 10 users.",
+            "This graph compares the students time taken analysis against the top 10 Students.",
             ha="center",
             fontsize=10,
             transform=fig.transFigure,
@@ -1017,7 +1017,7 @@ try:
         plt.text(
             0.5,
             0.01,
-            "This graph compares the students time efficiency analysis against the top 10 users.",
+            "This graph compares the students time efficiency analysis against the top 10 Students.",
             ha="center",
             fontsize=10,
             transform=fig.transFigure,
@@ -1028,8 +1028,8 @@ try:
         # Set the page size of the PDF to 10x10 inches
         pdf.infodict()["Title"] = "Analysis Plots"
         pdf.infodict()["Author"] = "Your Name"
-        pdf.infodict()["Subject"] = "Analysis of top 10 users"
-        pdf.infodict()["Keywords"] = "analysis, top users"
+        pdf.infodict()["Subject"] = "Analysis of top 10 Students"
+        pdf.infodict()["Keywords"] = "analysis, top Students"
         # pdf.infodict()['CreationDate'] = datetime.datetime.today()
         pdf.infodict()["PageSize"] = (
             720,

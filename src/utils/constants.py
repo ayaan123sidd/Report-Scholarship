@@ -23,7 +23,7 @@ SUBJECT_DATA = {
                 "total_questions": "5",
             },
             {
-                "name": "Biopharmaceutics AND Calculations",
+                "name": "Biopharmaceutics And Calculations",
                 "total_questions": "5",
             },
             {
@@ -43,15 +43,15 @@ SUBJECT_DATA = {
                 "total_questions": "5",
             },
             {
-                "name": "ANTIMICROBIALS, ANTI-CANCER, TOXICOLOGY",
+                "name": "Antimicrobials, Anti-Cancer, Toxicology",
                 "total_questions": "5",
             },
             {
-                "name": "ENDOCRINOLOGY",
+                "name": "Endocrinology",
                 "total_questions": "5",
             },
             {
-                "name": "CHEMISTRY",
+                "name": "Chemistry",
                 "total_questions": "5",
             }
         ],
@@ -112,6 +112,6 @@ SUBJECT_DATA = {
 
 LMS_API_HEADERS = {"apiKey": "8209d837743ef9f4b1699ffaa36fe69a", "ORGID": "5735"}
 
-WKHTMLTOPDF_PATH = "/usr/local/bin/wkhtmltopdf"
+WKHTMLTOPDF_PATH = "/usr/local/bin/wkhtmltopdf" # FOR WINDOWS - "C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe"
 
 CUSTOM_TOP_10_STUDENTS_TIME_TAKEN = [random.randint(40, 50) for _ in list(range(0, 10))]
