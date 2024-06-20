@@ -384,10 +384,6 @@ try:
         return efficiency
 
 
-    def time_efficiency_for_current_student():
-        return sum(marks.get("time_efficiency") for marks in topics_data) / len(topics_data)
-
-
     def visualize_time_efficiency_top_users():
         sorted_user_ids = sort_users_by_time_taken()
         efficiency_data = {
@@ -405,7 +401,7 @@ try:
         # Plot for given student
         given_student_name = get_student_name(given_student_id)
         given_student_efficiency = time_efficiency(given_student_id) or 0
-        
+
         given_bar = ax.barh(
             [given_student_name],
             [given_student_efficiency],
@@ -1090,7 +1086,7 @@ try:
     seconds = int((time_taken - minutes) * 60)
 
     perc = marks * 100 / 50  # HARDCODED DATA (magic values)
-    time_efficiency2 = "{:.2f}".format(time_efficiency_for_current_student())
+    time_efficiency2 = "{:.2f}".format(time_efficiency(given_student_id))
 
     # Rank
     student_id_to_find = given_student_id  # Example student ID to find rank
