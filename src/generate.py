@@ -49,12 +49,8 @@ try:
         raise Exception("Failed to retrieve exercises")
 
     exercise_data = exercise_service.get_exercise_data(attempt_id)
-
-    # Get the questions array
-    questions = exercise_data["exercise"]["test_parts"][0]["questions"]
-    # exercise_name = exercise_data["exercise"]["exercise_name"]
-
-    marks_array, time_taken_array = process_question_data(questions, qualification, scholarship)
+    test_parts = exercise_data["exercise"]["test_parts"]
+    marks_array, time_taken_array = process_question_data(test_parts, qualification, scholarship)
 
     qualification_data = get_qualification_data(qualification)
     if qualification_data is None:

@@ -34,26 +34,30 @@ def calculate_sum_marks(marks):
     return sum(mark for mark in marks if mark == 1)
 
 
-def process_question_data(questions, qualification, subject):
+def process_question_data(test_parts, qualification, subject):
     scholarship_data = get_scholarship_data(qualification, subject)
     total_questions = scholarship_data.get('total_questions', 0)
     marks_array = [0] * total_questions
     time_taken_array = [0] * total_questions
 
-    for i in range(total_questions):
-        if i < len(questions):
-            question = questions[i]
-            if "markedInputs" in question:
-                marked_input = question["markedInputs"][0]
-                if "is_attempted" in marked_input:
-                    # flags for marks_array[i] , i = 1 correct, 0 = incorrect, 2 = unattempted
-                    if marked_input["is_attempted"] == 1:
-                        marks_array[i] = 1 if marked_input.get("correct", 0) == 1 else 0
-                    else:
-                        marks_array[i] = 2
+    question_index = 0
 
-            # Extract time taken per question
-            time_taken_array[i] = question.get("user_question_time", 0)
+    for test_part in test_parts:
+        questions = test_part.get("questions", [])
+        for question in questions:
+            if question_index < total_questions:
+                if "markedInputs" in question:
+                    marked_input = question["markedInputs"][0]
+                    if "is_attempted" in marked_input:
+                        # flags for marks_array[i] , i = 1 correct, 0 = incorrect, 2 = unattempted
+                        if marked_input["is_attempted"] == 1:
+                            marks_array[question_index] = 1 if marked_input.get("correct", 0) == 1 else 0
+                        else:
+                            marks_array[question_index] = 2
+
+                # Extract time taken per question
+                time_taken_array[question_index] = question.get("user_question_time", 0)
+                question_index += 1
 
     return marks_array, time_taken_array
 
