@@ -97,17 +97,17 @@ def calculate_time_efficiency(max_marks, marks_scored, max_time, time_taken):
 # Passing probability
 def calculate_passing_probability(score):
     if score > 80:
-        return min(0.63 + ((score - 80) / 20) * 0.07, 0.65)
+        return min(0.63 + ((score - 80) / 20) * 0.07, 0.8)
     elif score >= 50:
-        return min(0.49 + ((score - 50) / 30) * 0.14, 0.65)
+        return min(0.49 + ((score - 50) / 30) * 0.14, 0.8)
     elif score >= 30:
-        return min(0.35 + ((score - 30) / 20) * 0.14, 0.65)
+        return min(0.35 + ((score - 30) / 20) * 0.14, 0.8)
     elif score >= 25:
-        return min(0.21 + ((score - 25) / 5) * 0.14, 0.65)
+        return min(0.21 + ((score - 25) / 5) * 0.14, 0.8)
     elif score >= 10:
-        return min(0.07 + ((score - 10) / 15) * 0.14, 0.65)
+        return min(0.07 + ((score - 10) / 15) * 0.14, 0.8)
     else:
-        return min((score / 10) * 0.07, 0.65)
+        return min((score / 10) * 0.07, 0.8)
 
 
 # Function to split label into two lines after a whitespace
@@ -294,6 +294,7 @@ def generate_front_page(
             .swot-analysis {{
                 padding: 0px 70px;
                 text-align: justify;
+                margin-top: 100px;
             }}
             .passprob{{
                 text-align: justify;
@@ -366,7 +367,7 @@ def generate_front_page(
                     <tr>
                         <td>Percentage Obtained: (%)</td>
                         <td>{rank1_accuracy}</td>
-                        <td>{percent}</td>
+                        <td>{percent:.2f}</td>
                         <td>{avg_percent}</td>
                     </tr>
                     <tr>
@@ -545,7 +546,7 @@ def generate_desclaimer():
                     margin-top: 200px;
                     text-align: center;
                     font-size: 20px;
-                    padding-bottom: 600px;
+                    padding-bottom: 420px;
                 }
             </style>
         </head>
