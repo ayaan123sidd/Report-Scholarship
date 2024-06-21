@@ -174,7 +174,7 @@ def generate_front_page(
                 border-collapse: collapse;
                 margin:0 auto;
                 margin-bottom: 20px;
-                margin-top:60px;
+                margin-top:40px;
             }}
             th, td {{
                 border: 2px solid #ddd;
@@ -201,7 +201,7 @@ def generate_front_page(
             background-color: #fff;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            margin-top:200px;
+            margin-top:100px;
             }}
             .summary2 {{
             margin-top: 20px;
@@ -267,7 +267,7 @@ def generate_front_page(
             }}
             .descl{{
                 text-align: justify;
-                margin-top: 350px;
+                margin-top: 250px;
                 padding: 0px 70px;
                 color:gray;
                 padding-bottom:50px
@@ -284,7 +284,7 @@ def generate_front_page(
                 background-color: #fff;
                 border-radius: 8px;
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                font-size:17px;
+                font-size:15px;
                 margin:0 40px;
                 margin-top: 50px;
             }}
@@ -292,7 +292,7 @@ def generate_front_page(
                 text-align: justify;
                 padding: 0px 70px;
                 padding-top:35px;
-                margin-top:220px;
+                margin-top:120px;
             }}
             .passprob div{{
                 font-size:18px;
@@ -312,6 +312,7 @@ def generate_front_page(
             }}
             .student-info p {{
                 margin: 10px 0;
+                font-size:14px;
             }}
         </style>
     </head>
