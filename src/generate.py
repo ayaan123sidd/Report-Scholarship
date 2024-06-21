@@ -432,7 +432,7 @@ try:
             va="center",
             ha=xPos,
         )  # Write value inside the bar
-        ax.set_title("Time Efficiency Analysis (Top 10 Users)")
+        ax.set_title("Time Efficiency Analysis (Top 10 Students)")
         ax.set_xlabel("Time Efficiency (%)")
         ax.set_ylabel("Students")
         # ax.legend(loc='upper left', bbox_to_anchor=(0.5, -0.25))
@@ -765,7 +765,7 @@ try:
         bars = plt.barh(
             topic_names, total_marks_topicwise, color="skyblue", height=0.5
         )  # Use plt.barh for horizontal bar plot
-        plt.title("Topic-wise Total Marks (Correct Answers)")
+        plt.title("Topic-Wise Total Marks (Correct Answers)", fontweight="bold")
         plt.xlabel("Total Correct Answers")
         plt.ylabel("Topics")
 
@@ -786,10 +786,7 @@ try:
         summary = (
             "This graph indicates the total number of correct answers for each topic."
         )
-        plt.figtext(
-            0.5, 0.01, summary, wrap=True, ha="center", fontsize=8
-        )  # Adjust figtext position for summary
-        # pdf.savefig(pad_inches=(20, 20, 20, 20)) 
+        plt.figtext(0.5, 0.01, summary, wrap=True, ha="center", fontsize=8)
         plt.subplots_adjust(bottom=0.15)
         pdf.savefig(bbox_inches="tight", pad_inches=0.3)
         plt.close()
@@ -798,13 +795,9 @@ try:
         bars = plt.barh(
             topic_names, average_time_taken_a, color="lightgreen", height=0.5
         )  # Use plt.barh for horizontal bar plot
-        plt.title(
-            "TOPIC-WISE AVERAGE TIME TAKEN PER QUESTION", fontsize=10, fontweight="bold"
-        )  # Title in uppercase
-        plt.xlabel(
-            "AVERAGE TIME TAKEN (SECONDS)", fontsize=8, fontweight="bold"
-        )  # X-axis label in uppercase
-        plt.ylabel("TOPICS", fontsize=8, fontweight="bold")  # Y-axis label in uppercase
+        plt.title("Topic-Wise Average Time Taken Per Question", fontweight="bold")
+        plt.xlabel("Average Time Taken (seconds)")
+        plt.ylabel("Topics")
 
         # Set y-tick labels in uppercase and split into two lines after a certain character limit
         ytick_labels = [
@@ -821,7 +814,7 @@ try:
         plt.grid(axis="x", linestyle="--", alpha=0.7)  # Adjust grid lines along x-axis
         plt.tight_layout(pad=3.5)  # Add padding/margins around the plot
 
-        summary = "THIS GRAPH INDICATES THE AVERAGE TIME TAKEN PER QUESTION FOR EACH TOPIC."  # Summary in uppercase
+        summary = "This graph indicates the average time taken per question for each topic."
         plt.figtext(
             0.5, 0.01, summary, wrap=True, ha="center", fontsize=8
         )  # Adjust figtext position for summary
@@ -832,7 +825,7 @@ try:
         # Plot Pie Chart for Percentage Correct, Incorrect, and Unattempted Questions
         plt.figure(figsize=(9.05, 6))  # Keep figure size for better readability
         plt.pie(sizes, colors=colors, autopct="%1.1f%%", startangle=140)
-        plt.title("Question Response Analysis", fontsize=12, pad=20)
+        plt.title("Question Response Analysis", pad=20)
         plt.axis("equal")  # Equal aspect ratio ensures that pie is drawn as a circle
         plt.legend(
             loc="upper right",
@@ -927,15 +920,9 @@ try:
             label="Incorrect",
         )
 
-        plt.title(
-            "PERCENTAGE OF CORRECT VS INCORRECT ANSWERS TOPIC-WISE",
-            fontsize=10,
-            fontweight="bold",
-        )  # Title in uppercase
-        plt.xlabel(
-            "PERCENTAGE OF ANSWERS", fontsize=8, fontweight="bold"
-        )  # X-axis label in uppercase
-        plt.ylabel("TOPICS", fontsize=8, fontweight="bold")  # Y-axis label in uppercase
+        plt.title("Percentage Of Correct vs Incorrect Answers Topic-Wise", fontweight="bold")
+        plt.xlabel("Percentage Of Answers")
+        plt.ylabel("Topics")
         plt.gca().xaxis.set_major_formatter(FuncFormatter(percentage_formatter))
 
         # Split y-tick labels into two lines after a certain character limit and make them uppercase
@@ -953,7 +940,7 @@ try:
         plt.grid(axis="x", linestyle="--", alpha=0.7)
         plt.tight_layout(pad=3.5)
 
-        summary = "THIS GRAPH INDICATES THE PERCENTAGE OF CORRECT AND INCORRECT ANSWERS FOR EACH TOPIC."  # Summary in uppercase
+        summary = "This Graph Indicates The Percentage Of Correct And Incorrect Answers For Each Topic."
         plt.figtext(0.5, 0.04, summary, wrap=True, ha="center", fontsize=8)
         plt.subplots_adjust(bottom=0.20)
         pdf.savefig(pad_inches=(20, 20, 20, 20))  # Adjust page size here
