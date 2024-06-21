@@ -28,6 +28,8 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization", "ORGID", "apiKey"], // Added 'apiKey' to allowed headers
   })
 );
+const __dirname = dirname(fileURLToPath(import.meta.url));
+app.use('/assets', express.static(path.join(__dirname, '../assets')));
 app.use(express.json());
 
 app.get("/studentDetails", async (req, res) => {
@@ -96,7 +98,7 @@ app.get("/studentDetails", async (req, res) => {
   }
 });
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+
 app.get("/", (req, res) => {
   const indexPath = path.join(__dirname, "index.html");
   const indexContent = readFileSync(indexPath, "utf-8");
