@@ -119,7 +119,8 @@ def generate_front_page(
     passing_result,
     topics_data,
     top_opportunities,
-    top_threats
+    top_threats,
+    max_marks
 ):
 
     summary_to_display = get_summary_to_display(percent)
@@ -273,8 +274,7 @@ def generate_front_page(
                 text-align: justify;
                 padding: 0px 70px;
                 padding-top:35px;
-                margin-top:200px;
-                font-size:18px;
+                margin-top:220px;
             }}
             .passprob div{{
                 font-size:18px;
@@ -306,9 +306,9 @@ def generate_front_page(
             </div>
             <div class="student-info">
                 <p><strong>Name: </strong>{student_name}</p>
-                <p><strong>Percentage: </strong> {percent}%</p>
+                <p><strong>Percentage: </strong> {percent:.2f}%</p>
                 <p><strong>Accuracy: </strong> {accuracy}%</p>
-                <p><strong>Marks Obtained (out of 50): </strong> {marks}</p>
+                <p><strong>Marks Obtained (out of {max_marks}): </strong> {marks}</p>
                 <p><strong>Time taken: </strong> {minutes} minutes, {seconds} seconds</p>
                 <p><strong>Time Efficiency: </strong> {time_efficiency2}% </p>
                 <p><strong>Percentile of Student: </strong> {percentile} %</p>

@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -59,6 +60,7 @@ try:
 
     topics = subject_data.get("topics", [])
     max_time = subject_data.get("max_time", 60)
+    max_subject_marks = subject_data.get("total_marks", 50)
 
     # Extract the total questions for each topic
     topic_question_idx = 0
@@ -323,7 +325,7 @@ try:
         time_taken_students.append(candidate_time)
         time_taken_students.sort(reverse=True)
 
-        fig = plt.figure(figsize=(8, 6))
+        fig = plt.figure(figsize=(8.35, 6))
         ax = fig.add_subplot(111)
 
         # Plot the combined data
@@ -356,7 +358,7 @@ try:
             get_student_name(student_id): time_taken_analysis(student_id)
             for student_id in sorted_user_ids
         }
-        fig = plt.figure(figsize=(8, 6))
+        fig = plt.figure(figsize=(8.82, 6))
         ax = fig.add_subplot(111)
 
         # Get the reversed list of data points
@@ -401,7 +403,7 @@ try:
             get_student_name(student_id): time_efficiency(student_id)
             for student_id in sorted_user_ids
         }
-        fig = plt.figure(figsize=(8, 6))
+        fig = plt.figure(figsize=(9.52, 6))
         ax = fig.add_subplot(111)
         sorted_names = list(efficiency_data.keys())
         sorted_values = list(efficiency_data.values())
@@ -439,7 +441,7 @@ try:
             get_student_name(student_id): points_percentage_analysis(student_id)
             for student_id in sorted_user_ids
         }
-        fig = plt.figure(figsize=(8, 6))
+        fig = plt.figure(figsize=(8.23, 6))
         ax = fig.add_subplot(555)
         for student_id in sorted_user_ids:
             student_name = get_student_name(student_id)
@@ -460,11 +462,12 @@ try:
 
     def visualize_marks_top_users():
         sorted_user_ids = sort_users_by_max_marks()
+        total_students = len(sorted_user_ids)
         marks_data = {
             get_student_name(student_id): marks_analysis(student_id)
             for student_id in sorted_user_ids
         }
-        fig = plt.figure(figsize=(8, 6))
+        fig = plt.figure(figsize=(9.5, 6))
         ax = fig.add_subplot(111)
         sorted_names = list(marks_data.keys())
         sorted_values = list(marks_data.values())
@@ -477,7 +480,7 @@ try:
         given_student_marks = marks_analysis(given_student_id)
         ax.barh(
             [given_student_name],
-            [time_efficiency(given_student_id)],
+            [given_student_marks],
             color="red",
             label=f"Candidate: ({given_student_name})",
         )
@@ -488,12 +491,12 @@ try:
             color="black",
             va="center",
         )  # Write value inside the bar
-        ax.set_title("Marks Analysis (Top 10 Students)")
+        ax.set_title(f"Marks Analysis (Top {total_students} Students)")
         ax.set_xlabel("Marks Obtained")
-        ax.set_ylabel("Top 10 Student")
+        ax.set_ylabel(f"Top {total_students} Student")
         ax.legend()
         ax.set_yticks([])
-        return fig
+        return fig, total_students
 
     def visualize_accuracy_top_users1():
         sorted_user_ids = sort_users_by_max_marks()
@@ -501,7 +504,7 @@ try:
             get_student_name(student_id): accuracy_analysis(student_id)
             for student_id in sorted_user_ids
         }
-        fig = plt.figure(figsize=(8, 6))
+        fig = plt.figure(figsize=(8.82, 6))
         ax = fig.add_subplot(111)
 
         # Plot data points
@@ -548,7 +551,7 @@ try:
             get_student_name(student_id): accuracy_analysis(student_id) or 0
             for student_id in sorted_user_ids
         }
-        fig = plt.figure(figsize=(8, 6))
+        fig = plt.figure(figsize=(8.82, 6))
         ax = fig.add_subplot(111)
 
         # Plot data points
@@ -590,7 +593,7 @@ try:
             get_student_name(student_id): percent_analysis(student_id)
             for student_id in sorted_user_ids
         }
-        fig = plt.figure(figsize=(8, 6))
+        fig = plt.figure(figsize=(8.39, 6))
         ax = fig.add_subplot(111)
 
         # Plot data points
@@ -612,6 +615,7 @@ try:
         sorted_values.append(
             percent_analysis_for_current_student()
         )  # Add given student's data
+        sorted_values.sort(reverse=True)
         ax.plot(
             sorted_names, sorted_values, linestyle="--", color="grey"
         )  # Dotted line, grey color
@@ -647,7 +651,7 @@ try:
     sns.set(style="whitegrid")
 
     # Bar chart for sum of marks per topic
-    topic_names = [topic.get("name", "") for topic in topics]
+    topic_names = [topic.get("name", "").upper() for topic in topics]
     sum_marks = [topic.get("marks") for topic in topics_data]
     correct_counts = [topic.get("correct_counts") for topic in topics_data]
     incorrect_counts = [topic.get("incorrect_counts") for topic in topics_data]
@@ -738,9 +742,20 @@ try:
     bar_width = 0.35
     topics_bar = np.arange(len(topic_names))
 
+    # Define the path to the file
+    file_path = 'assets/pdfs/graphs_summary.pdf'
+    directory = os.path.dirname(file_path)
+    # Create the directory if it does not exist
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    # Create the file if it does not exist
+    if not os.path.exists(file_path):
+        with open(file_path, 'wb') as file:
+            pass
+
     # Create a PDF file to save the plots
-    with PdfPages("assets/pdfs/graphs_summary.pdf") as pdf:
-        plt.figure(figsize=(7, 6))
+    with PdfPages(file_path) as pdf:
+        plt.figure(figsize=(8.82, 6))
         bars = plt.barh(
             topic_names, total_marks_topicwise, color="skyblue", height=0.5
         )  # Use plt.barh for horizontal bar plot
@@ -750,10 +765,10 @@ try:
 
         # Split y-tick labels into two lines after a certain character limit
         ytick_labels = [
-        (label.split(' ', 1)[0] + "\n" + label.split(' ', 1)[1]).upper() if ' ' in label else label.upper()
+        (label.split(' ', 1)[0] + "\n" + label.split(' ', 1)[1]) if ' ' in label else label
         for label in topic_names
         ]
-        ytick_labels = [label.upper() for label in ytick_labels]
+        ytick_labels = [label for label in ytick_labels]
         # Set y-tick labels with margin on the top
         plt.yticks(
             range(len(topic_names)), ytick_labels, rotation=0, ha="right", fontsize=8
@@ -773,7 +788,7 @@ try:
         pdf.savefig(bbox_inches="tight", pad_inches=0.3)
         plt.close()
 
-        plt.figure(figsize=(7, 6))
+        plt.figure(figsize=(8.82, 6))
         bars = plt.barh(
             topic_names, average_time_taken_a, color="lightgreen", height=0.5
         )  # Use plt.barh for horizontal bar plot
@@ -787,10 +802,10 @@ try:
 
         # Set y-tick labels in uppercase and split into two lines after a certain character limit
         ytick_labels = [
-        (label.split(' ', 1)[0] + "\n" + label.split(' ', 1)[1]).upper() if ' ' in label else label.upper()
+        (label.split(' ', 1)[0] + "\n" + label.split(' ', 1)[1]) if ' ' in label else label
         for label in topic_names
         ]
-        ytick_labels = [label.upper() for label in ytick_labels]
+        ytick_labels = [label for label in ytick_labels]
 
         # Set y-tick labels with margin on the right
         plt.yticks(
@@ -809,7 +824,7 @@ try:
         plt.close()
 
         # Plot Pie Chart for Percentage Correct, Incorrect, and Unattempted Questions
-        plt.figure(figsize=(6, 6))  # Keep figure size for better readability
+        plt.figure(figsize=(9.05, 6))  # Keep figure size for better readability
         plt.pie(sizes, colors=colors, autopct="%1.1f%%", startangle=140)
         plt.title("Question Response Analysis", fontsize=12, pad=20)
         plt.axis("equal")  # Equal aspect ratio ensures that pie is drawn as a circle
@@ -890,7 +905,7 @@ try:
         y_positions = np.arange(len(topic_names))
         correct_positions = y_positions + bar_offset
         incorrect_positions = y_positions - bar_offset
-        plt.figure(figsize=(7, 6))
+        plt.figure(figsize=(8.23, 6))
         bars1 = plt.barh(
             correct_positions,
             percentage_correct_topicwise,
@@ -919,10 +934,10 @@ try:
 
         # Split y-tick labels into two lines after a certain character limit and make them uppercase
         ytick_labels = [
-        (label.split(' ', 1)[0] + "\n" + label.split(' ', 1)[1]).upper() if ' ' in label else label.upper()
+        (label.split(' ', 1)[0] + "\n" + label.split(' ', 1)[1]) if ' ' in label else label
         for label in topic_names
         ]
-        ytick_labels = [label.upper() for label in ytick_labels]
+        ytick_labels = [label for label in ytick_labels]
 
         # Set y-tick labels with margin on the right
         plt.yticks(range(len(topic_names)), ytick_labels, fontsize=8, ha="right")
@@ -974,12 +989,12 @@ try:
         )  # Save the current figure to the PDF with a tight bounding box
         plt.close(fig)
 
-        fig = visualize_marks_top_users()
+        fig, total_students = visualize_marks_top_users()
         # Add description
         plt.text(
             0.5,
             0.01,
-            "This graph displays the students marks analysis against the top 10 Students.",
+            f"This graph displays the students marks analysis against the top {total_students} Students.",
             ha="center",
             fontsize=10,
             transform=fig.transFigure,
@@ -1062,7 +1077,7 @@ try:
     avg_time_efficiency = average_time_efficiency()
 
     student_name = get_student_name(given_student_id)
-    accuracy = accuracy_analysis_for_current_student()
+    accuracy = "{:.2f}".format(accuracy_analysis_for_current_student())
     percent = percent_analysis_for_current_student()
     marks = marks_analysis(given_student_id)
     points_percentage2 = points_percentage_analysis(given_student_id)
@@ -1118,6 +1133,7 @@ try:
         "topics_data": topics_data,
         "top_opportunities": top_opportunities,
         "top_threats": top_threats,
+        "max_marks": max_subject_marks,
     }
 
     html_content1 = generate_front_page(**front_page_args)
