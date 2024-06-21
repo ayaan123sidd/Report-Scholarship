@@ -480,7 +480,13 @@ def generate_front_page(
     </div>
 
     <div class="how">
-        <h2>How <span style="color:#103AC5;font-weight:700">Academically</span> Can Help You Succeed:</h2> At<span style="color:#103AC5;font-weight:700"> Academically</span>, we are committed to helping you excel in your exam preparation. We offer a comprehensive suite of resources designed to enhance your learning experience and boost your chances of success. Our offerings include live interactive lectures with experienced instructors frm around the world, a wide range of mock exams to simulate the actual test environment, detailed study handouts that cover all essential topics, and much more. Our goal is to provide you with the tools and support you need to confidently approach your exam and achieve outstanding results. Join us at <span style="color:#103AC5;font-weight:700">Academically</span> and take the next step towards your academic success.
+        <h2>How <span style="color:#103AC5;font-weight:700">Academically</span> Can Help You Succeed:</h2> At<span style="color:#103AC5;font-weight:700"> Academically</span>, we're dedicated to helping you excel in your exam preparation. Join us and gain access to a comprehensive suite of resources designed to enhance your learning experience and boost your chances of success. Benefit from live interactive lectures with experienced instructors from around the world, a wide range of AI-powered mock exams to simulate your actual test environment, and detailed study handouts that cover all essential topics.
+<br>
+<br>
+Our personalized approach identifies your areas of improvement and provides targeted practice to help you overcome challenges. We also focus on strengthening your strong topics using advanced AI mocks. With a proven 93% success rate, we're confident in our ability to help you achieve outstanding results.
+<br>
+<br>
+Our goal is to provide you with the tools and support you need to confidently approach your exam and succeed. Join us at Academically and take the next step toward your academic success.
     </div>
 
 
