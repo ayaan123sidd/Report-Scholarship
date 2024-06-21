@@ -250,12 +250,6 @@ def generate_front_page(
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
                 font-size:18px;
             }}
-            .note{{
-                text-align: justify;
-                margin-top: 30px;
-                padding: 0px 70px;
-                padding-top: 30px;
-            }}
             .how{{
                  text-align: justify;
                 margin-top:50px;
@@ -329,12 +323,12 @@ def generate_front_page(
                 <p><strong>Percentage: </strong> {percent:.2f}%</p>
                 <p><strong>Accuracy: </strong> {accuracy}%</p>
                 <p><strong>Marks Obtained (out of {max_marks}): </strong> {marks}</p>
-                <p><strong>Time taken: </strong> {minutes} minutes, {seconds} seconds</p>
+                <p><strong>Time Taken: </strong> {minutes} minutes, {seconds} seconds</p>
                 <p><strong>Time Efficiency: </strong> {time_efficiency2}% </p>
                 <p><strong>Percentile of Student: </strong> {percentile} %</p>
                 <p><strong>Rank of Student: </strong> {rank}</p>
-                {'<p class="equal"><em><strong>Note: </strong>Percentage and accuracy are equal because the student attempted all questions.</em></p>' if percent == accuracy else ''}
-                <p class="equal"><em><strong>Time efficiency:</strong> Number of correct answers marked relative to the time expended. (How Efficiently time was managed) </em></p>
+                <p class="equal"><em><strong>Time Efficiency:</strong> Number of correct answers marked relative to the time expended. (How Efficiently time was managed) </em></p>
+                {"<p class='equal'><em><strong>Note: </strong>Percentage and accuracy are equal because the student attempted all questions.</em></p>" if f'{percent:.2f}' == accuracy else ""}
             </div>
             </div>
 
@@ -343,7 +337,7 @@ def generate_front_page(
                 <thead>
                     <tr>
                         <th></th>
-                        <th>Top performer</th>
+                        <th>Top Performer</th>
                         <th>{student_name}</th>
                         <th>Average Score</th>
                     </tr>
@@ -470,7 +464,7 @@ def generate_front_page(
             <h2 style="{'color:#103AC5; margin-top:100px'}">SWOT Analysis</h2>
             <p><strong>Strong Areas:</strong> {strong_areas}</p>
             <p><strong>Weak Areas:</strong> {weak_areas}</p>
-            <p><strong>Opportunities:</strong>Topics <b><i> {top_opportunities[0]}</i></b> and <b><i>{top_opportunities[1]}</i></b> demonstrate high time efficiency scores, showing strong proficiency and potential for further mastery. This indicates efficient time management and deep understanding. Focusing on these topics can lead to advanced learning and higher scores through exploring related concepts and refining problem-solving skills.</p>
+            <p><strong>Opportunities: </strong>Topics <b><i> {top_opportunities[0]}</i></b> and <b><i>{top_opportunities[1]}</i></b> demonstrate high time efficiency scores, showing strong proficiency and potential for further mastery. This indicates efficient time management and deep understanding. Focusing on these topics can lead to advanced learning and higher scores through exploring related concepts and refining problem-solving skills.</p>
             <p><strong>Threats:</strong> However, <b><i>{top_threats[0]}</i></b> and <b><i>{top_threats[1]}</i></b> exhibit lower time efficiency scores, suggesting challenges in time management or understanding. To improve, prioritize enhancing time management skills, breaking down complex topics, and seeking additional study resources. Addressing these areas will enhance efficiency and comprehension, leading to better performance in assessments.</p>
         </div>
     </div>
@@ -483,24 +477,6 @@ def generate_front_page(
 
     <div class="how">
         <h2>How <span style="color:#103AC5;font-weight:700">Academically</span> Can Help You Succeed:</h2> At<span style="color:#103AC5;font-weight:700"> Academically</span>, we are committed to helping you excel in your exam preparation. We offer a comprehensive suite of resources designed to enhance your learning experience and boost your chances of success. Our offerings include live interactive lectures with experienced instructors frm around the world, a wide range of mock exams to simulate the actual test environment, detailed study handouts that cover all essential topics, and much more. Our goal is to provide you with the tools and support you need to confidently approach your exam and achieve outstanding results. Join us at <span style="color:#103AC5;font-weight:700">Academically</span> and take the next step towards your academic success.
-    </div>
-        
-    <div class="note">
-        <h4>Note</h4>
-        <ul>
-        <li>
-        <p>Graphs Provided: The report includes various graphs that visualize data related to the student's performance. These graphs represent different metrics such as accuracy, marks obtained, time taken, or other relevant factors.</p>
-        </li>
-        <li>
-        <p>Analysis: The graphs are not just visual representations of data; they are the result of an analysis process. This analysis involves interpreting the student's performance data in comparison to the performance data of other users.</p>
-        </li>
-        <li>
-        <p>Comparison to Top 10 Users: The analysis specifically compares the student's performance to that of the top 10 users. This comparison provides valuable insights into how the student's performance measures up against the top performers in the given context.</p>
-        </li>
-        <li>
-        <p>Purpose: The purpose of this analysis is to evaluate the student's performance relative to a high-performing group. By comparing the student to the top 10 users, the report aims to identify areas of strength and areas for improvement for the student.</p>
-        </li>
-        </ul>
     </div>
 
 
