@@ -338,7 +338,6 @@ try:
         second_value=time_taken_students[0]
         time_taken_students[0]=23
         time_taken_students[1]=second_value
-        print(time_taken_students)
         # Plot the combined data
         sns.lineplot(ax=ax, x=range(len(time_taken_students)), y=time_taken_students, marker="o")
 
@@ -1037,7 +1036,7 @@ try:
     top_opportunities = [topic['name'] for topic in sorted_topics[:2]]
     top_threats = [topic['name'] for topic in sorted_topics[-2:]]
 
-    percentile = round((rank*100) / TotalRanks,1)
+    percentile = round(((TotalRanks-rank)*100) / (TotalRanks),1)
     
     # Generate front page HTML dynamically
     front_page_args = {
