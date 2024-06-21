@@ -232,6 +232,9 @@
           fetch(`/studentDetails?email=${email}&subject=${subject}`)
             .then((response) => {
               if (!response.ok) {
+                if (response.status === 400) { // Changed: Added specific check for 400 status
+                throw new Error("User does not exist"); // Changed: Throw specific error message
+              }
                 throw new Error(`HTTP status ${response.status}`);
               }
               return response.json();
@@ -297,8 +300,14 @@
               loader.style.display = "none";
               document.getElementById("userDetails").innerHTML = "";
               document.getElementById("userMarks").innerHTML = "";
-              document.getElementById("error").textContent =
-                "There was a problem fetching the data. Please try again later.";
+              // document.getElementById("error").textContent =
+              //   "There was a problem fetching the data. Please try again later.";
+              if (error.message === "User does not exist") { // Changed: Check specific error message
+                document.getElementById("error").textContent = "User does not exist. Please check the email."; // Changed: Display specific error message
+              } else {
+                document.getElementById("error").textContent =
+                  "There was a problem fetching the data. Please try again later.";
+              }
             });
         });
 

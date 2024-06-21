@@ -57,6 +57,9 @@ app.get("/studentDetails", async (req, res) => {
       agent: httpsAgent,
     });
     if (!studentResponse.ok) {
+      if (studentResponse.status === 400) {
+        return res.status(400).json({ message: "User does not exist" });
+      }
       throw new Error(
         `API call failed1 with status: ${studentResponse.status}`
       );

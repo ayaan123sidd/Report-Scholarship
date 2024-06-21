@@ -314,7 +314,7 @@ def generate_front_page(
                 <p><strong>Percentile of Student: </strong> {percentile} %</p>
                 <p><strong>Rank of Student: </strong> {rank}</p>
                 {'<p class="equal"><em><strong>Note: </strong>Percentage and accuracy are equal because the student attempted all questions.</em></p>' if percent == accuracy else ''}
-                <p class="equal"><em><strong>Percentile: </strong>The student is above {percentile}% of the test users</em></p>
+                <p class="equal"><em><strong>Time efficiency:</strong> Number of correct answers marked relative to the time expended. (How Efficiently time was managed) </em></p>
             </div>
             </div>
            
