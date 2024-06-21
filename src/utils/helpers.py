@@ -263,7 +263,7 @@ def generate_front_page(
             }}
             .descl{{
                 text-align: justify;
-                margin-top: 50px;
+                margin-top: 380px;
                 padding: 0px 70px;
                 color:gray;
                 padding-bottom:50px
