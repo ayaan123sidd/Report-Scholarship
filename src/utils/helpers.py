@@ -319,7 +319,7 @@ def generate_front_page(
                 margin-bottom: 20px;
             }}
             .areas {{
-                font-size: 18px;
+                font-size: 17px;
             }}
             .area-value {{
                 color: #0FB995;
@@ -477,8 +477,8 @@ def generate_front_page(
         ])}
         <div class="summary2">
             <h2 style="{'color:#103AC5; margin-top:380px'}">SWOT Analysis</h2>
-            <p><strong class="areas">Strong Areas:</strong> <span class="area-value">{strong_areas}</span></p>
-            <p><strong class="areas">Weak Areas:</strong> <span class="area-value">{weak_areas}</span></p>
+            <p><strong class="areas">Strong Areas:</strong> {strong_areas}</p>
+            <p><strong class="areas">Weak Areas:</strong> {weak_areas}</p>
             <p><strong class="areas">Opportunities: </strong>Topics <span class="area-value">{top_opportunities[0]}</span> and <span class="area-value">{top_opportunities[1]}</span> demonstrate high time efficiency scores, showing strong proficiency and potential for further mastery. This indicates efficient time management and deep understanding. Focusing on these topics can lead to advanced learning and higher scores through exploring related concepts and refining problem-solving skills.</p>
             <p><strong class="areas">Threats:</strong> However, <span class="area-value">{top_threats[0]}</span> and <span class="area-value">{top_threats[1]}</span> exhibit lower time efficiency scores, suggesting challenges in time management or understanding. To improve, prioritize enhancing time management skills, breaking down complex topics, and seeking additional study resources. Addressing these areas will enhance efficiency and comprehension, leading to better performance in assessments.</p>
         </div>

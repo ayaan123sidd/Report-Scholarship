@@ -997,8 +997,8 @@ try:
     min_percentage = min(correct_percentages)
 
     # Example student data
-    strong_areas = f"{max_subject} stands out as the strongest area, with the highest percentage of correct answers ({max_percentage:.1f}%)."
-    weak_areas = f"{min_subject} appears to be the weakest area, with a lower percentage of correct answers ({min_percentage:.1f}%) and a higher percentage of incorrect answers."
+    strong_areas = f"<span class='area-value'>{max_subject}</span> stands out as the strongest area, with the highest percentage of correct answers ({max_percentage:.1f}%)."
+    weak_areas = f"<span class='area-value'>{min_subject}</span> appears to be the weakest area, with a lower percentage of correct answers ({min_percentage:.1f}%) and a higher percentage of incorrect answers."
     # Rank 1   -----   # HARDCODED DATA
     rank1_accuracy = 99
     rank1_marks = 49
