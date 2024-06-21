@@ -1,5 +1,11 @@
 import random
 
+LMS_API_HEADERS = {"apiKey": "62fd09ca0e4bda109687a49faee18bcd", "ORGID": "5735"}
+
+WKHTMLTOPDF_PATH = "/usr/local/bin/wkhtmltopdf" # FOR MAC - "/usr/local/bin/wkhtmltopdf"    # FOR WINDOWS - "C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe"
+
+CUSTOM_TOP_10_STUDENTS_TIME_TAKEN = [random.randint(40, 50) for _ in list(range(1, 11))]
+
 QUALIFICATION_DATA = {
     "pharmacy": {
         "scholarships": {
@@ -306,7 +312,49 @@ QUALIFICATION_DATA = {
                 "test_id": 91181,
                 "total_questions": 50,
                 "total_marks": 50,
-                "max_time": 60
+                "max_time": 60,
+                "topics": [
+                    {
+                        "name": "Embryology",
+                        "total_questions": "5"
+                    },
+                    {
+                        "name": "Microbiology",
+                        "total_questions": "5"
+                    },
+                    {
+                        "name": "Biochemistry",
+                        "total_questions": "5"
+                    },
+                    {
+                        "name": "Biostatistics",
+                        "total_questions": "5"
+                    },
+                    {
+                        "name": "Pathology",
+                        "total_questions": "5"
+                    },
+                    {
+                        "name": "Anatomy",
+                        "total_questions": "5"
+                    },
+                    {
+                        "name": "Histology",
+                        "total_questions": "5"
+                    },
+                    {
+                        "name": "Genetics",
+                        "total_questions": "5"
+                    },
+                    {
+                        "name": "Immunology",
+                        "total_questions": "5"
+                    },
+                    {
+                        "name": "Pharmacology",
+                        "total_questions": "5"
+                    }
+                ],
             },
             "medicos": {
                 "class_id": 262859,
@@ -367,8 +415,3 @@ QUALIFICATION_DATA = {
         ],
     },
 }
-
-LMS_API_HEADERS = {"apiKey": "62fd09ca0e4bda109687a49faee18bcd", "ORGID": "5735"}
-
-WKHTMLTOPDF_PATH = "C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe" # FOR MAC - "/usr/local/bin/wkhtmltopdf"    # FOR WINDOWS - "C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe"
-CUSTOM_TOP_10_STUDENTS_TIME_TAKEN = [random.randint(40, 50) for _ in list(range(1, 11))]

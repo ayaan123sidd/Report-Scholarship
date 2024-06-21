@@ -55,14 +55,19 @@ try:
     qualification_data = get_qualification_data(qualification)
     if qualification_data is None:
         raise Exception("Qualification data not found")
-    
-    subject_data = get_scholarship_data(qualification, scholarship)
-    if subject_data is None:
-        raise Exception("Subject data not found")
 
-    topics = qualification_data.get("topics", [])
-    max_time = subject_data.get("max_time", 60)
-    max_subject_marks = subject_data.get("total_marks", 50)
+    scholarship_data = get_scholarship_data(qualification, scholarship)
+    if scholarship_data is None:
+        raise Exception("Scholarship data not found")
+
+    topics = []
+    if scholarship == "usmle":
+        topics = scholarship_data.get("topics", [])
+    else:
+        topics = qualification_data.get("topics", [])
+
+    max_time = scholarship_data.get("max_time", 60)
+    max_subject_marks = scholarship_data.get("total_marks", 50)
 
     # Extract the total questions for each topic
     topic_question_idx = 0
