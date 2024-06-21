@@ -19,7 +19,8 @@ from utils.helpers import (
     calculate_passing_probability,
     calculate_time_efficiency,
     get_qualification_data,
-    get_scholarship_data
+    get_scholarship_data,
+    generate_desclaimer
 )
 from utils.constants import LMS_API_HEADERS, WKHTMLTOPDF_PATH, CUSTOM_TOP_10_STUDENTS_TIME_TAKEN
 import traceback
@@ -839,66 +840,7 @@ try:
         pdf.savefig(bbox_inches="tight", pad_inches=0.5)
         plt.close()
 
-
-    # Plot Total Time Taken per Section
-        # plt.figure(figsize=(8, 6))
-        # plt.barh(sections, total_times, color="skyblue", height=0.5)
-        # plt.title("Total Time Taken per Section")
-        # plt.xlabel("Total Time Taken (minutes)")
-        # plt.ylabel("Sections")
-
-        # # Split y-tick labels into two lines after a whitespace
-        # ytick_labels = [split_label(label) for label in sections]
-
-        # # Set y-tick labels with margin on the right
-        # plt.yticks(
-        #     range(len(sections)), ytick_labels, fontsize=8, va="center", ha="right"
-        # )
-
-        # # Add a figure text with a summary
-        # summary = "This graph indicates the total time taken per section in minutes."
-        # plt.figtext(0.5, 0.03, summary, wrap=True, ha="center", fontsize=8)
-        # plt.subplots_adjust(bottom=0.2)
-
-        # pdf.savefig(bbox_inches="tight")  # Save the figure
-        # plt.close()
-
-
-    # Plot PERCENTAGE OF CORRECT ANSWERS TOPIC-WISE
-        # plt.figure(figsize=(7, 6))
-        # bars = plt.barh(
-        #     topic_names, percentage_correct_topicwise, color="orange", height=0.5
-        # )
-        # plt.title(
-        #     "PERCENTAGE OF CORRECT ANSWERS TOPIC-WISE", fontsize=10, fontweight="bold"
-        # )  # Title in uppercase
-        # plt.xlabel(
-        #     "PERCENTAGE OF CORRECT ANSWERS", fontsize=8, fontweight="bold"
-        # )  # X-axis label in uppercase
-        # plt.ylabel("TOPICS", fontsize=8, fontweight="bold")  # Y-axis label in uppercase
-        # plt.gca().xaxis.set_major_formatter(FuncFormatter(percentage_formatter))
-
-        # # Split y-tick labels into two lines after a certain character limit
-        # ytick_labels = [
-        #     label[:10] + "\n" + label[10:] if len(label) > 10 else label
-        #     for label in topic_names
-        # ]
-
-        # # Set y-tick labels with margin on the right
-        # plt.yticks(
-        #     range(len(topic_names)), ytick_labels, fontsize=8, va="center", ha="right"
-        # )
-
-        # plt.grid(axis="x", linestyle="--", alpha=0.7)  # Adjust grid lines along x-axis
-        # plt.tight_layout(pad=3.5)  # Add padding/margins around the plot
-
-        # summary = "THIS GRAPH INDICATES THE PERCENTAGE OF CORRECT ANSWERS FOR EACH TOPIC."  # Summary in uppercase
-        # plt.figtext(0.5, 0.01, summary, wrap=True, ha="center", fontsize=8)
-        # pdf.savefig(pad_inches=(20, 20, 20, 20))  # Adjust page size here
-        # plt.close()
-
         # Create a PDF file to save the plots
-
         bar_height = 0.35
         bar_offset = bar_height / 2
         y_positions = np.arange(len(topic_names))
@@ -1139,11 +1081,19 @@ try:
         configuration=config,
     )
 
+    pdfkit.from_string(
+        generate_desclaimer(),
+        "assets/pdfs/desclaimer.pdf",
+        options=options,
+        configuration=config,
+    )
+
     # Merge front page PDF with analysis plots PDF
     merger = PdfMerger()
     merger.append("assets/pdfs/front_page.pdf")
     merger.append("assets/pdfs/graphs_summary.pdf")
     merger.append("assets/pdfs/analysis_plots.pdf")
+    merger.append("assets/pdfs/desclaimer.pdf")
 
     # Save the final report PDF
     merger.write("assets/pdfs/final_report.pdf")

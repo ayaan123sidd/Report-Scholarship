@@ -36,7 +36,7 @@ def calculate_sum_marks(marks):
 
 def process_question_data(test_parts, qualification, subject):
     scholarship_data = get_scholarship_data(qualification, subject)
-    total_questions = scholarship_data.get('total_questions', 0)
+    total_questions = scholarship_data.get("total_questions", 0)
     marks_array = [0] * total_questions
     time_taken_array = [0] * total_questions
 
@@ -51,7 +51,9 @@ def process_question_data(test_parts, qualification, subject):
                     if "is_attempted" in marked_input:
                         # flags for marks_array[i] , i = 1 correct, 0 = incorrect, 2 = unattempted
                         if marked_input["is_attempted"] == 1:
-                            marks_array[question_index] = 1 if marked_input.get("correct", 0) == 1 else 0
+                            marks_array[question_index] = (
+                                1 if marked_input.get("correct", 0) == 1 else 0
+                            )
                         else:
                             marks_array[question_index] = 2
 
@@ -71,14 +73,24 @@ def calculate_counts(marks):
     incorrect_percentage = (incorrect / total) * 100
     unattempted_percentage = (unattempted / total) * 100
 
-    return total, correct, incorrect, unattempted, correct_percentage, incorrect_percentage, unattempted_percentage
+    return (
+        total,
+        correct,
+        incorrect,
+        unattempted,
+        correct_percentage,
+        incorrect_percentage,
+        unattempted_percentage,
+    )
 
 
 def calculate_time_efficiency(max_marks, marks_scored, max_time, time_taken):
-    if marks_scored==0 and time_taken == 0:
+    if marks_scored == 0 and time_taken == 0:
         efficiency = 0
     else:
-        efficiency = (marks_scored / max_marks * 0.7 + (1 - time_taken / max_time) * 0.3) * 100
+        efficiency = (
+            marks_scored / max_marks * 0.7 + (1 - time_taken / max_time) * 0.3
+        ) * 100
     return round(efficiency)
 
 
@@ -144,7 +156,7 @@ def generate_front_page(
     topics_data,
     top_opportunities,
     top_threats,
-    max_marks
+    max_marks,
 ):
 
     summary_to_display = get_summary_to_display(percent)
@@ -234,7 +246,7 @@ def generate_front_page(
             }}
             .report-title {{
                 font-size: 3em;
-                margin-top: 90px;
+                margin-top: 70px;
                 color: #555;
                 border-bottom: 2px solid #555;
                 display: inline-block;
@@ -312,7 +324,6 @@ def generate_front_page(
             }}
             .student-info p {{
                 margin: 10px 0;
-                font-size:14px;
             }}
         </style>
     </head>
@@ -401,7 +412,7 @@ def generate_front_page(
             </div>
 
              <div class="summary" id="summary1" style="display:{'block' if summary_to_display == 1 else 'none'};" >
-                <h3>Student Summary1</h3>
+                <h3>Student Summary</h3>
                 <ul>
                 <li>
                 <p>The student exhibited commendable performance in the online scholarship test, with an accuracy rate of <strong>{accuracy}%</strong>, showing effort and willingness to engage with the material. While the accuracy rate is below the desired level, the student's commitment to attempting questions is notable.
@@ -419,7 +430,7 @@ def generate_front_page(
             </div>
 
              <div class="summary" id="summary2" style="display:{'block' if summary_to_display == 2 else 'none'};" >
-                <h3>Student Summary2</h3>
+                <h3>Student Summary</h3>
                 <ul>
                 <li>
                 <p>The student achieved an average performance in the online scholarship test with an accuracy rate of <strong>{accuracy}%</strong>, indicating room for improvement in both accuracy and time efficiency. 
@@ -456,7 +467,7 @@ def generate_front_page(
         <p><em>This AI-Powered Assessment test analyzes user data in detail. It evaluates skills and knowledge accurately, providing personalized feedback and unbiased grading. The AI efficiently processes large data volumes, offering deep insights into user strengths and improvement areas.</em></p>
         {''.join([
             f'''
-            <div class="summary2" style="{'padding-bottom: 120px;' if i == 5 else ''}">
+            <div class="summary2" style="{'padding-bottom: 110px;' if i == 4 else ''}">
             <h2>{topic.get("name")}</h2>
             <p>Average Time per Question: {float(topic.get("avg_time", 0.0)):.1f} seconds</p>
             <p>Correct Answers: {topic.get("correct_counts")} out of {topic.get("total")} ({topic.get("correct_percentage"):.1f}%)</p>
@@ -466,7 +477,7 @@ def generate_front_page(
             ''' for i, topic in enumerate(topics_data)
         ])}
         <div class="summary2">
-            <h2 style="{'color:#103AC5; margin-top:100px'}">SWOT Analysis</h2>
+            <h2 style="{'color:#103AC5; margin-top:130px'}">SWOT Analysis</h2>
             <p><strong>Strong Areas:</strong> {strong_areas}</p>
             <p><strong>Weak Areas:</strong> {weak_areas}</p>
             <p><strong>Opportunities: </strong>Topics <b><i> {top_opportunities[0]}</i></b> and <b><i>{top_opportunities[1]}</i></b> demonstrate high time efficiency scores, showing strong proficiency and potential for further mastery. This indicates efficient time management and deep understanding. Focusing on these topics can lead to advanced learning and higher scores through exploring related concepts and refining problem-solving skills.</p>
@@ -520,5 +531,74 @@ Our goal is to provide you with the tools and support you need to confidently ap
     </body>
     </html>
 
+    """
+    return html_content
+
+
+def generate_desclaimer():
+    html_content = """
+    <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Student Report</title>
+            <style>
+                html{
+                    background-color: #f9f9f9;
+                }
+                body {
+                    font-family: Arial, sans-serif;
+                    margin: 0;
+                    background-color: #f9f9f9;
+                    color: #333;
+                }
+                .container {
+                    width: 80%;
+                    margin: 0 auto;
+                    text-align: center;
+                    padding-top: 50px;
+                    position: relative;
+                }
+                .descl {
+                    text-align: justify;
+                    margin-top: 150px;
+                    padding: 0px 70px;
+                    color:gray;
+                    padding-bottom:50px
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+
+            <div class="descl">
+                <h4>Disclaimer:</h4>
+                <ul>
+                    <li>
+                    <p>This report is intended solely for students who participated in the scholarship test. The data and analysis may not be relevant for students who haven't taken the test.</p>
+                    </li>
+                    <li>
+                    <p>The analytics presented in this report are based on the responses and information provided by the test takers themselves. While we strive for accuracy, it's important to understand the data's origin.</p>
+                    </li>
+                    <li>
+                    <p>The "passing probability" reflects your performance in the scholarship test, not necessarily the actual scholarship exam. It's a tool to help you make informed decisions, but it shouldn't be the sole factor.</p>
+                    </li>
+                    <li>
+                    <p>We take steps to ensure the report's accuracy, but discrepancies or errors are always a possibility. We cannot assume responsibility for any such issues.</p>
+                    </li>
+                    <li>
+                    <p>The provided probabilities are estimates based on test performance, not guarantees of your actual exam results.</p>
+                    </li>
+                    <li>
+                    <p>We recommend that you independently verify any critical information presented in this report. Additionally, consulting with advisors or mentors can provide valuable insights for your scholarship journey.</p>
+                    </li>
+                    <li>
+                    <p>The institution is not liable for any actions you take based on the information in this report. It's your responsibility to use this information alongside other resources and guidance.</p>
+                    </li>
+                </ul>
+            </div>
+        </body>
+    </html>
     """
     return html_content
