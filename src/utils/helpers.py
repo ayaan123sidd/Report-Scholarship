@@ -96,19 +96,22 @@ def calculate_time_efficiency(max_marks, marks_scored, max_time, time_taken):
 
 # Passing probability
 def calculate_passing_probability(score):
-    if score > 80:
-        return min(0.63 + ((score - 80) / 20) * 0.07, 0.8)
+    if score < 10:
+        return 20.0
+    elif score > 80:
+        P = min(0.63 + ((score - 80) / 20) * 0.07, 0.8)
     elif score >= 50:
-        return min(0.49 + ((score - 50) / 30) * 0.14, 0.8)
+        P = min(0.49 + ((score - 50) / 30) * 0.24, 0.8)
     elif score >= 30:
-        return min(0.35 + ((score - 30) / 20) * 0.14, 0.8)
+        P = min(0.35 + ((score - 30) / 20) * 0.24, 0.8)
     elif score >= 25:
-        return min(0.21 + ((score - 25) / 5) * 0.14, 0.8)
+        P = min(0.21 + ((score - 25) / 5) * 0.24, 0.8)
     elif score >= 10:
-        return min(0.07 + ((score - 10) / 15) * 0.14, 0.8)
-    else:
-        return min((score / 10) * 0.07, 0.8)
-
+        P = min(0.07 + ((score - 10) / 15) * 0.24, 0.8)
+    
+    # Transform P to the new range [30, 60]
+    P_new = 30 + 37.5 * P
+    return P_new
 
 # Function to split label into two lines after a whitespace
 def split_label(label):
