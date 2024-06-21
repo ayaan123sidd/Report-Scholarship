@@ -274,6 +274,7 @@ def generate_front_page(
                 padding: 0px 70px;
                 padding-top:35px;
                 margin-top:200px;
+                font-size:18px;
             }}
             .passprob div{{
                 font-size:18px;
@@ -434,10 +435,10 @@ def generate_front_page(
         </div>
         <div class="container2">
         <h1 class='generative'>AI-Powered Assessment</h1>
-        <p><em>AI-Generated Comprehensive Test Analysis.</em></p>
+        <p><em>This AI-Powered Assessment test analyzes user data in detail. It evaluates skills and knowledge accurately, providing personalized feedback and unbiased grading. The AI efficiently processes large data volumes, offering deep insights into user strengths and improvement areas.</em></p>
         {''.join([
             f'''
-            <div class="summary2" style="{'padding-bottom: 150px;' if i == 5 else ''}">
+            <div class="summary2" style="{'padding-bottom: 120px;' if i == 5 else ''}">
             <h2>{topic.get("name")}</h2>
             <p>Average Time per Question: {float(topic.get("avg_time", 0.0)):.1f} seconds</p>
             <p>Correct Answers: {topic.get("correct_counts")} out of {topic.get("total")} ({topic.get("correct_percentage"):.1f}%)</p>
@@ -447,17 +448,17 @@ def generate_front_page(
             ''' for i, topic in enumerate(topics_data)
         ])}
         <div class="summary2">
-            <h2>SWOT Analysis</h2>
+            <h2 style="{'color:#103AC5; margin-top:100px'}">SWOT Analysis</h2>
             <p><strong>Strong Areas:</strong> {strong_areas}</p>
             <p><strong>Weak Areas:</strong> {weak_areas}</p>
             <p><strong>Opportunities:</strong>Topics <b><i> {top_opportunities[0]}</i></b> and <b><i>{top_opportunities[1]}</i></b> demonstrate high time efficiency scores, showing strong proficiency and potential for further mastery. This indicates efficient time management and deep understanding. Focusing on these topics can lead to advanced learning and higher scores through exploring related concepts and refining problem-solving skills.</p>
-            <p><strong>Threat:</strong> However, <b><i>{top_threats[0]}</i></b> and <b><i>{top_threats[1]}</i></b> exhibit lower time efficiency scores, suggesting challenges in time management or understanding. To improve, prioritize enhancing time management skills, breaking down complex topics, and seeking additional study resources. Addressing these areas will enhance efficiency and comprehension, leading to better performance in assessments.</p>
+            <p><strong>Threats:</strong> However, <b><i>{top_threats[0]}</i></b> and <b><i>{top_threats[1]}</i></b> exhibit lower time efficiency scores, suggesting challenges in time management or understanding. To improve, prioritize enhancing time management skills, breaking down complex topics, and seeking additional study resources. Addressing these areas will enhance efficiency and comprehension, leading to better performance in assessments.</p>
         </div>
     </div>
     </div>
         
     <div class="passprob">
-        <h2>Passing Probability</h2>
+        <h2 style="{'color:#103AC5'}">Passing Probability</h2>
         <div>Based on your performance in the scholarship mock test, your estimated probability of passing the actual exam is <span class="pp" >{passing_result}%</span>. While this probability is derived from a detailed analysis of your mock test scores and may not fully reflect your potential, at Academically, we are committed to helping you surpass expectations and realize your aspirations. We'll collaborate closely to enhance your preparation and ensure you're primed for success on exam day.</div>
     </div>
 
