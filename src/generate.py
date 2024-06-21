@@ -344,7 +344,7 @@ try:
         # Add max time horizontal line
         ax.axhline(max_time, color='blue', linestyle='--', label=f'Max Time: {max_time} minutes')
 
-        ax.set_title("Time Taken Analysis (Top 10 Students)")
+        ax.set_title("Time Taken Analysis (Top 10 Students)", fontweight="bold")
         ax.set_xlabel("Students")
         ax.set_ylabel("Time Taken (minutes)")
         ax.set_xticks([])
@@ -376,7 +376,7 @@ try:
 
         sns.lineplot(ax=ax, x=reversed_names, y=reversed_data, marker="o")
 
-        ax.set_title("Time Taken Analysis (Top 10 Students)")
+        ax.set_title("Time Taken Analysis (Top 10 Students)", fontweight="bold")
         ax.set_xlabel("Students")
         ax.set_ylabel("Time Taken (minutes)")
         ax.set_xticks(range(len(time_data)))
@@ -428,10 +428,9 @@ try:
             va="center",
             ha=xPos,
         )  # Write value inside the bar
-        ax.set_title("Time Efficiency Analysis (Top 10 Students)")
+        ax.set_title("Time Efficiency Analysis (Top 10 Students)", fontweight="bold")
         ax.set_xlabel("Time Efficiency (%)")
         ax.set_ylabel("Students")
-        # ax.legend(loc='upper left', bbox_to_anchor=(0.5, -0.25))
         ax.legend(loc='best')
         ax.set_yticks([])
         return fig
@@ -493,7 +492,7 @@ try:
             color="black",
             va="center",
         )  # Write value inside the bar
-        ax.set_title(f"Marks Analysis (Top {total_students} Students)")
+        ax.set_title(f"Marks Analysis (Top {total_students} Students)", fontweight="bold")
         ax.set_xlabel("Marks Obtained")
         ax.set_ylabel(f"Top {total_students} Student")
         ax.legend()
@@ -630,7 +629,7 @@ try:
             label=f"Candidate: ({get_student_name(given_student_id)})",
         )
 
-        ax.set_title("Percentage Analysis (Top 10 Students)")
+        ax.set_title("Percentage Analysis (Top 10 Students)", fontweight="bold")
         ax.set_xlabel("Students")
         ax.set_ylabel("Accuracy (%)")
         ax.set_xticks([])
@@ -821,16 +820,16 @@ try:
         # Plot Pie Chart for Percentage Correct, Incorrect, and Unattempted Questions
         plt.figure(figsize=(9.05, 6))  # Keep figure size for better readability
         plt.pie(sizes, colors=colors, autopct="%1.1f%%", startangle=140)
-        plt.title("Question Response Analysis", pad=20)
+        plt.title("Question Response Analysis", fontweight="bold", pad=20)
         plt.axis("equal")  # Equal aspect ratio ensures that pie is drawn as a circle
         plt.legend(
             loc="upper right",
             labels=["Correct", "Incorrect", "Unattempted"],
             fontsize=8,
         )
-        plt.xlabel("Response Categories", fontsize=10)  # Add x-axis label
+        plt.xlabel("Response Categories")  # Add x-axis label
         summary = "This pie chart shows the distribution of correct, incorrect, and unattempted questions."
-        plt.figtext(0.5, 0.01, summary, wrap=True, ha="center", fontsize=10)
+        plt.figtext(0.5, 0.01, summary, wrap=True, ha="center", fontsize=8)
         plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1)
         pdf.savefig(bbox_inches="tight", pad_inches=0.5)
         plt.close()
@@ -970,7 +969,7 @@ try:
             0.01,
             "This graph compares the students marks based percent analysis against the top 10 Students. ",
             ha="center",
-            fontsize=10,
+            fontsize=8,
             transform=fig.transFigure,
         )
         pdf.savefig(
@@ -985,7 +984,7 @@ try:
             0.01,
             f"This graph displays the students marks analysis against the top {total_students} Students.",
             ha="center",
-            fontsize=10,
+            fontsize=8,
             transform=fig.transFigure,
         )
         plt.subplots_adjust(bottom=0.15)
@@ -1014,7 +1013,7 @@ try:
             0.01,
             "This graph compares the students time efficiency analysis against the top 10 Students.",
             ha="center",
-            fontsize=10,
+            fontsize=8,
             transform=fig.transFigure,
         )
         plt.subplots_adjust(bottom=0.15)
