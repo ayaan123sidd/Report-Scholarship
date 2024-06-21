@@ -246,11 +246,10 @@ def generate_front_page(
             }}
             .report-title {{
                 font-size: 3em;
-                margin-top: 70px;
+                margin-top: 60px;
                 color: #555;
                 border-bottom: 2px solid #555;
                 display: inline-block;
-                padding-bottom: 10px;
             }}
             .generative{{
                 font-size:2.5rem;
@@ -286,9 +285,11 @@ def generate_front_page(
                 background-color: #fff;
                 border-radius: 8px;
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                font-size:15px;
                 margin:0 40px;
                 margin-top: 50px;
+            }}
+            .summary ul > li {{
+                font-size: 17px !important;
             }}
             .passprob{{
                 text-align: justify;
@@ -313,6 +314,15 @@ def generate_front_page(
             }}
             .student-info p {{
                 margin: 10px 0;
+            }}
+            .assessment-desc {{
+                margin-bottom: 20px;
+            }}
+            .areas {{
+                font-size: 18px;
+            }}
+            .area-value {{
+                color: #0FB995;
             }}
         </style>
     </head>
@@ -453,10 +463,10 @@ def generate_front_page(
         </div>
         <div class="container2">
         <h1 class='generative'>AI-Powered Assessment</h1>
-        <p><em>This AI-Powered Assessment test analyzes user data in detail. It evaluates skills and knowledge accurately, providing personalized feedback and unbiased grading. The AI efficiently processes large data volumes, offering deep insights into user strengths and improvement areas.</em></p>
+        <p class="assessment-desc"><em>This AI-Powered Assessment test analyzes user data in detail. It evaluates skills and knowledge accurately, providing personalized feedback and unbiased grading. The AI efficiently processes large data volumes, offering deep insights into user strengths and improvement areas.</em></p>
         {''.join([
             f'''
-            <div class="summary2" style="{'padding-bottom: 140px;' if i == 4 else ''}">
+            <div class="summary2" style="{'padding-bottom: 170px;' if i == 4 else ''}">
             <h2>{topic.get("name")}</h2>
             <p>Average Time per Question: {float(topic.get("avg_time", 0.0)):.1f} seconds</p>
             <p>Correct Answers: {topic.get("correct_counts")} out of {topic.get("total")} ({topic.get("correct_percentage"):.1f}%)</p>
@@ -466,11 +476,11 @@ def generate_front_page(
             ''' for i, topic in enumerate(topics_data)
         ])}
         <div class="summary2">
-            <h2 style="{'color:#103AC5; margin-top:240px'}">SWOT Analysis</h2>
-            <p><strong>Strong Areas:</strong> {strong_areas}</p>
-            <p><strong>Weak Areas:</strong> {weak_areas}</p>
-            <p><strong>Opportunities: </strong>Topics <b><i> {top_opportunities[0]}</i></b> and <b><i>{top_opportunities[1]}</i></b> demonstrate high time efficiency scores, showing strong proficiency and potential for further mastery. This indicates efficient time management and deep understanding. Focusing on these topics can lead to advanced learning and higher scores through exploring related concepts and refining problem-solving skills.</p>
-            <p><strong>Threats:</strong> However, <b><i>{top_threats[0]}</i></b> and <b><i>{top_threats[1]}</i></b> exhibit lower time efficiency scores, suggesting challenges in time management or understanding. To improve, prioritize enhancing time management skills, breaking down complex topics, and seeking additional study resources. Addressing these areas will enhance efficiency and comprehension, leading to better performance in assessments.</p>
+            <h2 style="{'color:#103AC5; margin-top:380px'}">SWOT Analysis</h2>
+            <p><strong class="areas">Strong Areas:</strong> <span class="area-value">{strong_areas}</span></p>
+            <p><strong class="areas">Weak Areas:</strong> <span class="area-value">{weak_areas}</span></p>
+            <p><strong class="areas">Opportunities: </strong>Topics <span class="area-value">{top_opportunities[0]}</span> and <span class="area-value">{top_opportunities[1]}</span> demonstrate high time efficiency scores, showing strong proficiency and potential for further mastery. This indicates efficient time management and deep understanding. Focusing on these topics can lead to advanced learning and higher scores through exploring related concepts and refining problem-solving skills.</p>
+            <p><strong class="areas">Threats:</strong> However, <span class="area-value">{top_threats[0]}</span> and <span class="area-value">{top_threats[1]}</span> exhibit lower time efficiency scores, suggesting challenges in time management or understanding. To improve, prioritize enhancing time management skills, breaking down complex topics, and seeking additional study resources. Addressing these areas will enhance efficiency and comprehension, leading to better performance in assessments.</p>
         </div>
     </div>
     </div>
