@@ -97,17 +97,17 @@ def calculate_time_efficiency(max_marks, marks_scored, max_time, time_taken):
 # Passing probability
 def calculate_passing_probability(score):
     if score > 80:
-        return 0.9 + ((score - 80) / 20) * 0.1
+        return min(0.63 + ((score - 80) / 20) * 0.07, 0.65)
     elif score >= 50:
-        return 0.7 + ((score - 50) / 30) * 0.2
+        return min(0.49 + ((score - 50) / 30) * 0.14, 0.65)
     elif score >= 30:
-        return 0.5 + ((score - 30) / 20) * 0.2
+        return min(0.35 + ((score - 30) / 20) * 0.14, 0.65)
     elif score >= 25:
-        return 0.3 + ((score - 25) / 5) * 0.2
+        return min(0.21 + ((score - 25) / 5) * 0.14, 0.65)
     elif score >= 10:
-        return 0.1 + ((score - 10) / 15) * 0.2
+        return min(0.07 + ((score - 10) / 15) * 0.14, 0.65)
     else:
-        return (score / 10) * 0.1
+        return min((score / 10) * 0.07, 0.65)
 
 
 # Function to split label into two lines after a whitespace
@@ -347,7 +347,6 @@ def generate_front_page(
                 <p><strong>Time Taken: </strong> {minutes} minutes, {seconds} seconds</p>
                 <p><strong>Time Efficiency: </strong> {time_efficiency2}% </p>
                 <p><strong>Percentile of Student: </strong> {percentile} %</p>
-                <p><strong>Rank of Student: </strong> {rank}</p>
                 <p class="equal"><em><strong>Time Efficiency:</strong> Number of correct answers marked relative to the time expended. (How Efficiently time was managed) </em></p>
                 {"<p class='equal'><em><strong>Note: </strong>Percentage and accuracy are equal because the student attempted all questions.</em></p>" if f'{percent:.2f}' == accuracy else ""}
             </div>
