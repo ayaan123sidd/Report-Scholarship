@@ -1019,7 +1019,7 @@ try:
     time_taken = time_taken_analysis(given_student_id)
     minutes = int(time_taken)
 
-    passing_probab = 100 * calculate_passing_probability(percent)
+    passing_probab = calculate_passing_probability(percent)
     passing_result = f"{passing_probab:.0f}"
     # Extract seconds
     seconds = int((time_taken - minutes) * 60)
