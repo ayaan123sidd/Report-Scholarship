@@ -297,7 +297,7 @@ def generate_front_page(
             .swot-analysis {{
                 padding: 0px 70px;
                 text-align: justify;
-                padding-top: 100px;
+                padding-top: 250px;
             }}
             .passprob{{
                 text-align: justify;
@@ -488,7 +488,7 @@ def generate_front_page(
     </div>
 
     <div class="summary2 swot-analysis">
-        <h2 style="{'color:#103AC5; margin-top:450px'}">SWOT Analysis</h2>
+        <h2 style="{'color:#103AC5'}">SWOT Analysis</h2>
         <p><strong class="areas">Strong Areas:</strong> {strong_areas}</p>
         <p><strong class="areas">Weak Areas:</strong> {weak_areas}</p>
         <p><strong class="areas">Opportunities: </strong>Topics <span class="area-value">{top_opportunities[0]}</span> and <span class="area-value">{top_opportunities[1]}</span> demonstrate high time efficiency scores, showing strong proficiency and potential for further mastery. This indicates efficient time management and deep understanding. Focusing on these topics can lead to advanced learning and higher scores through exploring related concepts and refining problem-solving skills.</p>
