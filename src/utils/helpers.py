@@ -267,7 +267,7 @@ def generate_front_page(
                 font-size:18px;
             }}
             .how{{
-                 text-align: justify;
+                text-align: justify;
                 margin-top:50px;
                 padding: 0px 70px;
                 padding-top:20px;
@@ -276,16 +276,6 @@ def generate_front_page(
             }}
             .how h1{{
                 color:#0FB995
-            }}
-            .descl{{
-                text-align: justify;
-                margin-top: 250px;
-                padding: 0px 70px;
-                color:gray;
-                padding-bottom:50px
-            }}
-            .descl ul{{
-                
             }}
             .note p{{
               font-size:13px
@@ -303,8 +293,7 @@ def generate_front_page(
             .passprob{{
                 text-align: justify;
                 padding: 0px 70px;
-                padding-top:35px;
-                margin-top:120px;
+                margin-top:50px;
             }}
             .passprob div{{
                 font-size:18px;
@@ -467,7 +456,7 @@ def generate_front_page(
         <p><em>This AI-Powered Assessment test analyzes user data in detail. It evaluates skills and knowledge accurately, providing personalized feedback and unbiased grading. The AI efficiently processes large data volumes, offering deep insights into user strengths and improvement areas.</em></p>
         {''.join([
             f'''
-            <div class="summary2" style="{'padding-bottom: 110px;' if i == 4 else ''}">
+            <div class="summary2" style="{'padding-bottom: 140px;' if i == 4 else ''}">
             <h2>{topic.get("name")}</h2>
             <p>Average Time per Question: {float(topic.get("avg_time", 0.0)):.1f} seconds</p>
             <p>Correct Answers: {topic.get("correct_counts")} out of {topic.get("total")} ({topic.get("correct_percentage"):.1f}%)</p>
@@ -477,7 +466,7 @@ def generate_front_page(
             ''' for i, topic in enumerate(topics_data)
         ])}
         <div class="summary2">
-            <h2 style="{'color:#103AC5; margin-top:130px'}">SWOT Analysis</h2>
+            <h2 style="{'color:#103AC5; margin-top:240px'}">SWOT Analysis</h2>
             <p><strong>Strong Areas:</strong> {strong_areas}</p>
             <p><strong>Weak Areas:</strong> {weak_areas}</p>
             <p><strong>Opportunities: </strong>Topics <b><i> {top_opportunities[0]}</i></b> and <b><i>{top_opportunities[1]}</i></b> demonstrate high time efficiency scores, showing strong proficiency and potential for further mastery. This indicates efficient time management and deep understanding. Focusing on these topics can lead to advanced learning and higher scores through exploring related concepts and refining problem-solving skills.</p>
@@ -493,41 +482,13 @@ def generate_front_page(
 
     <div class="how">
         <h2>How <span style="color:#103AC5;font-weight:700">Academically</span> Can Help You Succeed:</h2> At<span style="color:#103AC5;font-weight:700"> Academically</span>, we're dedicated to helping you excel in your exam preparation. Join us and gain access to a comprehensive suite of resources designed to enhance your learning experience and boost your chances of success. Benefit from live interactive lectures with experienced instructors from around the world, a wide range of AI-powered mock exams to simulate your actual test environment, and detailed study handouts that cover all essential topics.
-<br>
-<br>
-Our personalized approach identifies your areas of improvement and provides targeted practice to help you overcome challenges. We also focus on strengthening your strong topics using advanced AI mocks. With a proven 93% success rate, we're confident in our ability to help you achieve outstanding results.
-<br>
-<br>
-Our goal is to provide you with the tools and support you need to confidently approach your exam and succeed. Join us at Academically and take the next step toward your academic success.
+        <br>
+        <br>
+        Our personalized approach identifies your areas of improvement and provides targeted practice to help you overcome challenges. We also focus on strengthening your strong topics using advanced AI mocks. With a proven 93% success rate, we're confident in our ability to help you achieve outstanding results.
+        <br>
+        <br>
+        Our goal is to provide you with the tools and support you need to confidently approach your exam and succeed. Join us at Academically and take the next step toward your academic success.
     </div>
-
-
-        <div class="descl">
-            <h4>Disclaimer:</h4>
-            <ul>
-                <li>
-                <p>This report is intended solely for students who participated in the scholarship test. The data and analysis may not be relevant for students who haven't taken the test.</p>
-                </li>
-                <li>
-                <p>The analytics presented in this report are based on the responses and information provided by the test takers themselves. While we strive for accuracy, it's important to understand the data's origin.</p>
-                </li>
-                <li>
-                <p>The "passing probability" reflects your performance in the scholarship test, not necessarily the actual scholarship exam. It's a tool to help you make informed decisions, but it shouldn't be the sole factor.</p>
-                </li>
-                <li>
-                <p>We take steps to ensure the report's accuracy, but discrepancies or errors are always a possibility. We cannot assume responsibility for any such issues.</p>
-                </li>
-                 <li>
-                <p>The provided probabilities are estimates based on test performance, not guarantees of your actual exam results.</p>
-                </li>
-                <li>
-                <p>We recommend that you independently verify any critical information presented in this report. Additionally, consulting with advisors or mentors can provide valuable insights for your scholarship journey.</p>
-                </li>
-                <li>
-                <p>The institution is not liable for any actions you take based on the information in this report. It's your responsibility to use this information alongside other resources and guidance.</p>
-                </li>
-                </ul>
-        </div>
     </body>
     </html>
 
@@ -553,25 +514,20 @@ def generate_desclaimer():
                     background-color: #f9f9f9;
                     color: #333;
                 }
-                .container {
-                    width: 80%;
-                    margin: 0 auto;
-                    text-align: center;
-                    padding-top: 50px;
-                    position: relative;
-                }
                 .descl {
                     text-align: justify;
-                    margin-top: 150px;
-                    padding: 0px 70px;
+                    padding: 0px 50px;
+                    padding-top: 60px;
                     color:gray;
                     padding-bottom:50px
+                }
+                .descl > h4 {
+                    font-size: 20px;
+                    padding-bottom: 20px;
                 }
             </style>
         </head>
         <body>
-            <div class="container">
-
             <div class="descl">
                 <h4>Disclaimer:</h4>
                 <ul>
@@ -597,6 +553,8 @@ def generate_desclaimer():
                     <p>The institution is not liable for any actions you take based on the information in this report. It's your responsibility to use this information alongside other resources and guidance.</p>
                     </li>
                 </ul>
+
+                <p class="text"></p>
             </div>
         </body>
     </html>
