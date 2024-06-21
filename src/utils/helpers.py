@@ -294,7 +294,7 @@ def generate_front_page(
             .swot-analysis {{
                 padding: 0px 70px;
                 text-align: justify;
-                margin-top: 100px;
+                padding-top: 100px;
             }}
             .passprob{{
                 text-align: justify;
@@ -546,7 +546,7 @@ def generate_desclaimer():
                     margin-top: 200px;
                     text-align: center;
                     font-size: 20px;
-                    padding-bottom: 420px;
+                    padding-bottom: 450px;
                 }
             </style>
         </head>
