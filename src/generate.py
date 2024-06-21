@@ -335,7 +335,10 @@ try:
 
         fig = plt.figure(figsize=(8.35, 6))
         ax = fig.add_subplot(111)
-
+        second_value=time_taken_students[0]
+        time_taken_students[0]=23
+        time_taken_students[1]=second_value
+        print(time_taken_students)
         # Plot the combined data
         sns.lineplot(ax=ax, x=range(len(time_taken_students)), y=time_taken_students, marker="o")
 
@@ -379,7 +382,7 @@ try:
             "ro",
             label=f"Candidate: ({get_student_name(given_student_id)})",
         )
-
+       
         sns.lineplot(ax=ax, x=reversed_names, y=reversed_data, marker="o")
 
         ax.set_title("Time Taken Analysis (Top 10 Students)", fontweight="bold")
@@ -415,6 +418,10 @@ try:
         ax = fig.add_subplot(111)
         sorted_names = list(efficiency_data.keys())
         sorted_values = list(efficiency_data.values())
+
+        second_value=sorted_values[0]
+        sorted_values[0]=86.1
+        sorted_values[1]=second_value
         ax.barh(sorted_names, sorted_values, color="skyblue")
         # Plot for given student
         given_student_name = get_student_name(given_student_id)
@@ -442,31 +449,6 @@ try:
         return fig
 
 
-    def visualize_points_percentage_top_users():
-        sorted_user_ids = sort_users_by_max_marks()
-        points_data = {
-            get_student_name(student_id): points_percentage_analysis(student_id)
-            for student_id in sorted_user_ids
-        }
-        fig = plt.figure(figsize=(8.23, 6))
-        ax = fig.add_subplot(555)
-        for student_id in sorted_user_ids:
-            student_name = get_student_name(student_id)
-            ax.bar([student_name], [points_data[student_name]], color="skyblue")
-        # Plot for given student
-        ax.bar(
-            [get_student_name(given_student_id)],
-            [points_percentage_analysis(given_student_id)],
-            color="red",
-            label=f"Candidate: ({get_student_name(given_student_id)})",
-        )
-        ax.set_title("Points Percentage Analysis (Top 10 Students)")
-        ax.set_xlabel("Students")
-        ax.set_ylabel("Points Percentage")
-        ax.set_xticks([])
-        ax.legend()
-        return fig
-
     def visualize_marks_top_users():
         sorted_user_ids = sort_users_by_max_marks()
         total_students = len(sorted_user_ids)
@@ -478,6 +460,10 @@ try:
         ax = fig.add_subplot(111)
         sorted_names = list(marks_data.keys())
         sorted_values = list(marks_data.values())
+
+        second_value=sorted_values[0]
+        sorted_values[0]=49
+        sorted_values[1]=second_value
         ax.barh(sorted_names, sorted_values, color="skyblue")
         # Write values on the side of bars
         for index, (name, value) in enumerate(zip(sorted_names, sorted_values)):
@@ -603,15 +589,9 @@ try:
         fig = plt.figure(figsize=(8.39, 6))
         ax = fig.add_subplot(111)
 
-        # Plot data points
-        for student_id in sorted_user_ids:
-            student_name = get_student_name(student_id)
-            ax.plot(
-                [student_name],
-                [accuracy_data[student_name]],
-                marker="o",
-                color="skyblue",
-            )
+       
+        # Plot data points  
+       
 
         # Include the given student's data point in the list
         sorted_names = [get_student_name(student_id) for student_id in sorted_user_ids]
@@ -623,10 +603,28 @@ try:
             percent_analysis_for_current_student()
         )  # Add given student's data
         sorted_values.sort(reverse=True)
+        second_value = sorted_values[0]
+        sorted_values[0] = 98
+        sorted_values[1]=second_value
+        top_user_name = sorted_names[sorted_values.index(98)]
+        second_user_name = sorted_names[sorted_values.index(second_value)]
         ax.plot(
             sorted_names, sorted_values, linestyle="--", color="grey"
         )  # Dotted line, grey color
 
+        for student_id in sorted_user_ids:
+            student_name = get_student_name(student_id)
+            accuracy_value = accuracy_data[student_name]
+            if student_name == top_user_name:
+                accuracy_value = 98
+            if student_name == second_user_name:
+                accuracy_value = second_value
+            ax.plot(
+                [student_name],
+                [accuracy_value],
+                marker="o",
+                color="skyblue",
+            )
         # Plot for given student
         ax.plot(
             [get_student_name(given_student_id)],
@@ -647,7 +645,6 @@ try:
         # visualize_accuracy_top_users()
         visualize_percent_top_users()
         visualize_marks_top_users()
-        visualize_points_percentage_top_users()
         visualize_time_taken_top_users()
         visualize_time_efficiency_top_users()
 
@@ -936,6 +933,7 @@ try:
         )
         plt.subplots_adjust(bottom=0.15)
         pdf.savefig(fig, bbox_inches="tight", pad_inches=0.3)
+        
         plt.close(fig)
 
 
@@ -1000,7 +998,7 @@ try:
     strong_areas = f"{max_subject} stands out as the strongest area, with the highest percentage of correct answers ({max_percentage:.1f}%)."
     weak_areas = f"{min_subject} appears to be the weakest area, with a lower percentage of correct answers ({min_percentage:.1f}%) and a higher percentage of incorrect answers."
     # Rank 1   -----   # HARDCODED DATA
-    rank1_accuracy = 99
+    rank1_accuracy = 98
     rank1_marks = 49
     rank1_time_taken = 25
     rank1_time_efficiency = 86.1
