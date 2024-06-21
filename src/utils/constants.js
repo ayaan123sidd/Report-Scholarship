@@ -1,4 +1,4 @@
-export const SUBJECT_DATA = {
+export const SCHOLARSHIP_DATA = {
     "kaps": [238659, 74556],
     "medicos": [262859, 89822],
     "adc": [272073, 98161],

@@ -8,7 +8,7 @@ import path from "path";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 import { spawn } from "child_process";
-import { SUBJECT_DATA } from "./utils/constants.js";
+import { SCHOLARSHIP_DATA } from "./utils/constants.js";
 
 dotenv.config();
 
@@ -31,18 +31,18 @@ app.use(
 app.use(express.json());
 
 app.get("/studentDetails", async (req, res) => {
-  const { email, subject } = req.query;
+  const { email, scholarship } = req.query;
   console.log("Received email:", email);
-  console.log("Received subject:", subject);
+  console.log("Received scholarship:", scholarship);
 
   try {
-    // Dynamic subject handling
+    // Dynamic scholarship handling
     let classId, testId;
-    const subjectData = SUBJECT_DATA[subject];
-    if (subjectData) {
-      [classId, testId] = subjectData;
+    const scholarshipData = SCHOLARSHIP_DATA[scholarship];
+    if (scholarshipData) {
+      [classId, testId] = scholarshipData;
     } else {
-      return res.status(400).json({ message: `Subject not found: ${subject}` });
+      return res.status(400).json({ message: `Scholarship not found: ${scholarship}` });
     }
 
     const studentApiUrl = `https://lms.academically.com/nuSource/api/v1/student/search?institution_id=4502&student_email=${email}`;
@@ -108,6 +108,7 @@ let lock = false;
 const queue = [];
 
 app.post("/run-script", (req, res) => {
+  console.log("run-script endpoint called")
   queue.push({ req, res });
   processQueue();
 });
@@ -120,7 +121,7 @@ function processQueue() {
 
   lock = true;
   const { req, res } = queue.shift();
-  const { studentId, subject } = req.body;
+  const { studentId, qualification, scholarship } = req.body;
 
   try {
     const pythonExecutable = process.env.PYTHON_EXECUTABLE_PATH;
@@ -128,7 +129,8 @@ function processQueue() {
     const pythonProcess = spawn(pythonExecutable, [
       scriptPath,
       studentId,
-      subject,
+      qualification,
+      scholarship,
     ]);
 
     let output = "";

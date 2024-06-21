@@ -18,47 +18,53 @@ from utils.helpers import (
     calculate_counts,
     calculate_passing_probability,
     calculate_time_efficiency,
+    get_qualification_data,
+    get_scholarship_data
 )
-from utils.constants import LMS_API_HEADERS, WKHTMLTOPDF_PATH, SUBJECT_DATA, CUSTOM_TOP_10_STUDENTS_TIME_TAKEN
+from utils.constants import LMS_API_HEADERS, WKHTMLTOPDF_PATH, CUSTOM_TOP_10_STUDENTS_TIME_TAKEN
 import traceback
 
 
 try:
     student_id = ""
-    subject = ""
-    if len(sys.argv) > 2:
-        e = sys.argv[1]
-        f = sys.argv[2]
+    qualification = ""
+    scholarship = ""
 
-        student_id = e
-        subject = f
-    else:
-        raise Exception("Student ID is not specified")
+    if len(sys.argv) != 4:
+        raise Exception("Incorrect number of arguments")
+        
+    student_id = sys.argv[1]
+    qualification = sys.argv[2]
+    scholarship = sys.argv[3]
 
-    classId, testId = get_class_and_test_id(subject)
+    classId, testId = get_class_and_test_id(qualification, scholarship)
 
-    exercie_service = ExerciseService(LMS_API_HEADERS)
+    exercise_service = ExerciseService(LMS_API_HEADERS)
 
-    data = exercie_service.get_attempt_data(testId, classId, student_id)
+    data = exercise_service.get_attempt_data(testId, classId, student_id)
 
     if data["code"] == 200 and data["message"] == "Exercise Retrieved":
         attempt_id = data["exercises"][0]["attempt_id"]
     else:
         raise Exception("Failed to retrieve exercises")
 
-    exercise_data = exercie_service.get_exercise_data(attempt_id)
+    exercise_data = exercise_service.get_exercise_data(attempt_id)
 
     # Get the questions array
     questions = exercise_data["exercise"]["test_parts"][0]["questions"]
     # exercise_name = exercise_data["exercise"]["exercise_name"]
 
-    marks_array, time_taken_array = process_question_data(questions, subject)
+    marks_array, time_taken_array = process_question_data(questions, qualification, scholarship)
 
-    subject_data = SUBJECT_DATA.get(subject, None)
+    qualification_data = get_qualification_data(qualification)
+    if qualification_data is None:
+        raise Exception("Qualification data not found")
+    
+    subject_data = get_scholarship_data(qualification, scholarship)
     if subject_data is None:
         raise Exception("Subject data not found")
 
-    topics = subject_data.get("topics", [])
+    topics = qualification_data.get("topics", [])
     max_time = subject_data.get("max_time", 60)
     max_subject_marks = subject_data.get("total_marks", 50)
 

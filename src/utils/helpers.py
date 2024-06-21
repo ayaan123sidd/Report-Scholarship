@@ -1,12 +1,32 @@
-from utils.constants import SUBJECT_DATA
+from utils.constants import QUALIFICATION_DATA
 
 
-def get_class_and_test_id(subject):
-    if subject in SUBJECT_DATA:
-        data = SUBJECT_DATA[subject]
-        return data.get("class_id", 0), data.get("test_id", 0)
-    else:
+def get_qualification_data(qualification):
+    if qualification in QUALIFICATION_DATA:
+        return QUALIFICATION_DATA[qualification]
+    return None
+
+
+def get_scholarship_data(qualification, scholarship):
+    qualification_data = get_qualification_data(qualification)
+
+    if qualification_data is None:
         return None
+
+    scholarship_data = qualification_data.get("scholarships")
+    if scholarship in scholarship_data:
+        data = scholarship_data.get(scholarship, None) or None
+        return data
+    return None
+
+
+def get_class_and_test_id(qualification, scholarship):
+    data = get_scholarship_data(qualification, scholarship)
+
+    if data is None:
+        return None
+
+    return data.get("class_id", 0), data.get("test_id", 0)
 
 
 # Function to calculate the sum of marks for correct answers
@@ -14,9 +34,9 @@ def calculate_sum_marks(marks):
     return sum(mark for mark in marks if mark == 1)
 
 
-def process_question_data(questions, subject):
-    subject_data = SUBJECT_DATA[subject]
-    total_questions = subject_data.get('total_questions', 0)
+def process_question_data(questions, qualification, subject):
+    scholarship_data = get_scholarship_data(qualification, subject)
+    total_questions = scholarship_data.get('total_questions', 0)
     marks_array = [0] * total_questions
     time_taken_array = [0] * total_questions
 
@@ -317,7 +337,6 @@ def generate_front_page(
                 <p class="equal"><em><strong>Time efficiency:</strong> Number of correct answers marked relative to the time expended. (How Efficiently time was managed) </em></p>
             </div>
             </div>
-           
 
             <table>
                 <caption><h3>Performance Comparison</h3></caption>

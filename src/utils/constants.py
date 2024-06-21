@@ -1,18 +1,37 @@
 import random
 
-SUBJECT_DATA = {
-    "medicos": (262859, 89822),
-    "adc": (272073, 98161),
-    "nclex": (280097, 105398),
-    "usmle": (262232, 91181),
-    "apc": (271165, 97775),
-    "ocanz": (285909, 113240),
-    "psi": (286125, 113417),
-    "sple": (286126, 113418),
-    "moh":(286797,113417),
-    "kaps": {
-        "class_id": 238659,
-        "test_id": 74556,
+QUALIFICATION_DATA = {
+    "pharmacy": {
+        "scholarships": {
+            "kaps": {
+                "class_id": 238659,
+                "test_id": 74556,
+                "total_questions": 50,
+                "total_marks": 50,
+                "max_time": 60
+            },
+            "sple": {
+                "class_id": 286126,
+                "test_id": 113418,
+                "total_questions": 50,
+                "total_marks": 50,
+                "max_time": 60
+            },
+            "psi": {
+                "class_id": 286125,
+                "test_id": 113417,
+                "total_questions": 50,
+                "total_marks": 50,
+                "max_time": 60
+            },
+            "moh": {
+                "class_id": 286797,
+                "test_id": 113417,
+                "total_questions": 50,
+                "total_marks": 50,
+                "max_time": 60
+            }
+        },
         "topics": [
             {
                 "name": "CVS",
@@ -55,13 +74,255 @@ SUBJECT_DATA = {
                 "total_questions": "5",
             }
         ],
+    },
+    "dentistry": {
+        "scholarships": {
+            "adc": {
+                "class_id": 272073,
+                "test_id": 98161,
+                "total_questions": 50,
+                "total_marks": 50,
+                "max_time": 60
+            }
+        },
+        "topics": [
+            {
+                "name": "Carries",
+                "total_questions": "5"
+            },
+            {
+                "name": "Periodontics",
+                "total_questions": "5"
+            },
+            {
+                "name": "Endodontics",
+                "total_questions": "5"
+            },
+            {
+                "name": "Oral Pathology",
+                "total_questions": "5"
+            },
+            {
+                "name": "Operative",
+                "total_questions": "5"
+            },
+            {
+                "name": "Oral Radiology",
+                "total_questions": "5"
+            },
+            {
+                "name": "Oral Surgery",
+                "total_questions": "5"
+            },
+            {
+                "name": "Ortho",
+                "total_questions": "5"
+            },
+            {
+                "name": "Dental Material",
+                "total_questions": "5"
+            },
+            {
+                "name": "Dental Implant",
+                "total_questions": "5"
+            }
+        ],
         "total_questions": 50,
         "total_marks": 50,
-        "max_time": 60, # in minutes
+        "max_time": 60
     },
-    "amcmock": {
-        "class_id": 292554,
-        "test_id": 119729,
+    "nursing": {
+        "scholarships": {
+            "nclex": {
+                "class_id": 280097,
+                "test_id": 105398,
+                "total_questions": 50,
+                "total_marks": 50,
+                "max_time": 60
+            }
+        },
+        "topics": [
+            {
+                "name": "GI System II",
+                "total_questions": "5"
+            },
+            {
+                "name": "Neurology",
+                "total_questions": "5"
+            },
+            {
+                "name": "Urinary System I",
+                "total_questions": "5"
+            },
+            {
+                "name": "Endocrine System",
+                "total_questions": "5"
+            },
+            {
+                "name": "ENT",
+                "total_questions": "5"
+            },
+            {
+                "name": "Pediatric Nursing",
+                "total_questions": "5"
+            },
+            {
+                "name": "Musculoskeletal System",
+                "total_questions": "5"
+            },
+            {
+                "name": "OBG",
+                "total_questions": "5"
+            },
+            {
+                "name": "Psychiatric",
+                "total_questions": "5"
+            },
+            {
+                "name": "Emergency",
+                "total_questions": "5"
+            }
+        ],
+        "total_questions": 50,
+        "total_marks": 50,
+        "max_time": 60
+    },
+    "physiotherapy": {
+        "scholarships": {
+            "apc": {
+                "class_id": 271165,
+                "test_id": 97775,
+                "total_questions": 50,
+                "total_marks": 50,
+                "max_time": 60
+            }
+        },
+        "topics": [
+            {
+                "name": "Asthma",
+                "total_questions": "5"
+            },
+            {
+                "name": "PT Management",
+                "total_questions": "5"
+            },
+            {
+                "name": "MSK",
+                "total_questions": "5"
+            },
+            {
+                "name": "ICD",
+                "total_questions": "5"
+            },
+            {
+                "name": "GBS",
+                "total_questions": "5"
+            },
+            {
+                "name": "Cardiopulmonary",
+                "total_questions": "5"
+            },
+            {
+                "name": "Cardiac Rehabilitation",
+                "total_questions": "5"
+            },
+            {
+                "name": "ECG",
+                "total_questions": "5"
+            },
+            {
+                "name": "Stroke",
+                "total_questions": "5"
+            },
+            {
+                "name": "MUSC",
+                "total_questions": "5"
+            }
+        ],
+        "total_questions": 50,
+        "total_marks": 50,
+        "max_time": 60
+    },
+    "optometry": {
+        "scholarships": {
+            "ocanz": {
+                "class_id": 285909,
+                "test_id": 113240,
+                "total_questions": 50,
+                "total_marks": 50,
+                "max_time": 60
+            }
+        },
+        "topics": [
+            {
+                "name": "EYE EXAMINATION & DIAGNOSTICS",
+                "total_questions": "5"
+            },
+            {
+                "name": "SPECTACLE",
+                "total_questions": "5"
+            },
+            {
+                "name": "CONTACT LENS",
+                "total_questions": "5"
+            },
+            {
+                "name": "LOW VISION & BV",
+                "total_questions": "5"
+            },
+            {
+                "name": "LIDS AND LACRIMAL SYSTEM",
+                "total_questions": "5"
+            },
+            {
+                "name": "CONJUNCTIVA, CORNEA, LENS",
+                "total_questions": "5"
+            },
+            {
+                "name": "UVEA",
+                "total_questions": "5"
+            },
+            {
+                "name": "ECG",
+                "total_questions": "5"
+            },
+            {
+                "name": "GLAUCOMA",
+                "total_questions": "5"
+            },
+            {
+                "name": "RETINA",
+                "total_questions": "5"
+            }
+        ],
+        "total_questions": 50,
+        "total_marks": 50,
+        "max_time": 60
+    },
+    "medicine": {
+        "scholarships": {
+            "usmle": {
+                "class_id": 262232,
+                "test_id": 91181,
+                "total_questions": 50,
+                "total_marks": 50,
+                "max_time": 60
+            },
+            "medicos": {
+                "class_id": 262859,
+                "test_id": 89822,
+                "total_questions": 50,
+                "total_marks": 50,
+                "max_time": 60
+            },
+            "amcmock": {
+                "class_id": 292554,
+                "test_id": 119729,
+                "total_questions": 150,
+                "total_marks": 150,
+                "max_time": 210
+            }
+        },
         "topics": [
             {
                 "name": "CVS",
@@ -104,10 +365,7 @@ SUBJECT_DATA = {
                 "total_questions": "15"
             }
         ],
-        "total_questions": 150,
-        "total_marks": 150,
-        "max_time": 210, # in minutes
-    }
+    },
 }
 
 LMS_API_HEADERS = {"apiKey": "62fd09ca0e4bda109687a49faee18bcd", "ORGID": "5735"}

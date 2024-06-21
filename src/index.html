@@ -193,7 +193,7 @@
         </select>
 
         <label for="scholarship">Select Scholarship:</label>
-        <select name="subject" id="subject" required>
+        <select name="scholarship" id="scholarship" required>
           <option value="">--Select Scholarship--</option>
         </select>
         <div>
@@ -217,7 +217,7 @@
         .addEventListener("submit", function (event) {
           event.preventDefault();
           const email = document.getElementById("email").value;
-          const subject = document.getElementById("subject").value;
+          const scholarship = document.getElementById("scholarship").value;
           const loader = document.getElementById("loader");
 
           function convertSecondsToMinutes(seconds) {
@@ -229,7 +229,7 @@
           loader.style.display = "block";
 
           // Using the endpoint to fetch the student details and marks
-          fetch(`/studentDetails?email=${email}&subject=${subject}`)
+          fetch(`/studentDetails?email=${email}&scholarship=${scholarship}`)
             .then((response) => {
               if (!response.ok) {
                 if (response.status === 400) { // Changed: Added specific check for 400 status
@@ -313,17 +313,23 @@
 
       function runPythonScript() {
         const studentIdElm = document.getElementById("studentId");
-        const subjectElm = document.getElementById("subject");
+        const qualificationElm = document.getElementById("qualification");
+        const scholarshipElm = document.getElementById("scholarship");
 
-        if (!studentIdElm || !subjectElm) {
+        if (!studentIdElm || !qualificationElm || !scholarshipElm) {
           alert("Please fetch student marks first.");
           return;
         }
 
         const payload = {
           studentId: studentIdElm.value,
-          subject: subjectElm.value,
+          qualification: qualificationElm.value,
+          scholarship: scholarshipElm.value,
         };
+
+        console.log({
+          payload
+        })
 
         fetch("/run-script", {
           method: "POST",
@@ -382,7 +388,7 @@
       };
 
       const qualification = document.getElementById('qualification').value;
-      const scholarships = document.getElementById('subject');
+      const scholarships = document.getElementById('scholarship');
 
       // Clear previous options
       scholarships.innerHTML = '<option value="">--Select Scholarship--</option>';
