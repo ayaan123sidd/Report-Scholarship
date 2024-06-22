@@ -87,6 +87,7 @@ try:
             topic_question_idx : topic_question_idx + topic_questions
         ]
         topic_question_idx += topic_questions
+        print("marks", topic_marks)
 
         (
             total,
@@ -99,6 +100,7 @@ try:
         ) = calculate_counts(topic_marks)
 
         total_marks = calculate_sum_marks(topic_marks)
+        
     
         avg_time_taken = sum(topic_time_taken) / len(topic_time_taken)
         
@@ -1037,7 +1039,7 @@ try:
     top_threats = [topic['name'] for topic in sorted_topics[-2:]]
 
     percentile = round(((TotalRanks-rank)*100) / (TotalRanks),1)
-    
+
     # Generate front page HTML dynamically
     front_page_args = {
         "student_name": student_name,
