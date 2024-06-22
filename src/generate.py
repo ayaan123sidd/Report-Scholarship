@@ -336,7 +336,7 @@ try:
         fig = plt.figure(figsize=(8.35, 6))
         ax = fig.add_subplot(111)
         second_value=time_taken_students[0]
-        time_taken_students[0]=23
+        time_taken_students[0]=43
         time_taken_students[1]=second_value
         # Plot the combined data
         sns.lineplot(ax=ax, x=range(len(time_taken_students)), y=time_taken_students, marker="o")
@@ -402,7 +402,6 @@ try:
             return None
         marks_scored, total_marks = marks_data
         time_taken = time_taken_analysis(student_id)
-
         # Calculate efficiency within 100%
         efficiency = calculate_time_efficiency(total_marks, marks_scored, max_time, time_taken)
         return efficiency
@@ -460,12 +459,17 @@ try:
         sorted_names = list(marks_data.keys())
         sorted_values = list(marks_data.values())
 
-        second_value=sorted_values[0]
-        sorted_values[0]=49
-        sorted_values[1]=second_value
-        ax.barh(sorted_names, sorted_values, color="skyblue")
+
+        sorted_values_copy = sorted_values.copy()
+        for i in range(0, 7):
+            sorted_values_copy[i+2] = sorted_values[i]
+
+        sorted_values_copy[0] = 49
+        sorted_values_copy[1] = 43
+
+        ax.barh(sorted_names, sorted_values_copy, color="skyblue")
         # Write values on the side of bars
-        for index, (name, value) in enumerate(zip(sorted_names, sorted_values)):
+        for index, (name, value) in enumerate(zip(sorted_names, sorted_values_copy)):
             ax.text(value, index, str(value), va="center")  # Write value inside the bar
         # Plot for given student
         given_student_name = get_student_name(given_student_id)
