@@ -85,6 +85,7 @@ def calculate_counts(marks):
 
 
 def calculate_time_efficiency(max_marks, marks_scored, max_time, time_taken):
+    print("mm1",max_marks, marks_scored, max_time, time_taken)
     if marks_scored == 0 and time_taken == 0:
         efficiency = 0
     else:

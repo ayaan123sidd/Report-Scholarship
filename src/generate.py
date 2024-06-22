@@ -87,7 +87,6 @@ try:
             topic_question_idx : topic_question_idx + topic_questions
         ]
         topic_question_idx += topic_questions
-        print("marks", topic_marks)
 
         (
             total,
@@ -260,7 +259,7 @@ try:
         for user in users_data:
             marks_data = extract_marks(user[0])
             marks_dict[user[0]] = int(marks_data[0]["mk"])
-        sorted_users = sorted(marks_dict.items(), key=lambda x: x[1], reverse=True)[:10]
+        sorted_users = sorted(marks_dict.items(), key=lambda x: x[1], reverse=True)[:8]
         sorted_user_ids = [user[0] for user in sorted_users]
         return sorted_user_ids
 
@@ -322,7 +321,7 @@ try:
         for user in users_data:
             time_data = time_taken_analysis(user[0])
             time_dict[user[0]] = time_data
-        sorted_users = sorted(time_dict.items(), key=lambda x: x[1], reverse=True)[:10]
+        sorted_users = sorted(time_dict.items(), key=lambda x: x[1], reverse=True)[:8]
         sorted_user_ids = [user[0] for user in sorted_users]
         return sorted_user_ids
 
@@ -411,10 +410,12 @@ try:
 
     def visualize_time_efficiency_top_users():
         sorted_user_ids = sort_users_by_time_taken()
+        
         efficiency_data = {
             get_student_name(student_id): time_efficiency(student_id)
             for student_id in sorted_user_ids
         }
+        # print("sorted", efficiency_data)
         fig = plt.figure(figsize=(9.52, 6))
         ax = fig.add_subplot(111)
         sorted_names = list(efficiency_data.keys())
