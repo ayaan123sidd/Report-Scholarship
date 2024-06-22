@@ -87,7 +87,6 @@ try:
             topic_question_idx : topic_question_idx + topic_questions
         ]
         topic_question_idx += topic_questions
-        print("marks", topic_marks)
 
         (
             total,
