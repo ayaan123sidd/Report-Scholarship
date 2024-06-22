@@ -259,7 +259,7 @@ try:
         for user in users_data:
             marks_data = extract_marks(user[0])
             marks_dict[user[0]] = int(marks_data[0]["mk"])
-        sorted_users = sorted(marks_dict.items(), key=lambda x: x[1], reverse=True)[:8]
+        sorted_users = sorted(marks_dict.items(), key=lambda x: x[1], reverse=True)[:10]
         sorted_user_ids = [user[0] for user in sorted_users]
         return sorted_user_ids
 
@@ -321,7 +321,7 @@ try:
         for user in users_data:
             time_data = time_taken_analysis(user[0])
             time_dict[user[0]] = time_data
-        sorted_users = sorted(time_dict.items(), key=lambda x: x[1], reverse=True)[:8]
+        sorted_users = sorted(time_dict.items(), key=lambda x: x[1], reverse=True)[:10]
         sorted_user_ids = [user[0] for user in sorted_users]
         return sorted_user_ids
 
@@ -464,6 +464,7 @@ try:
 
 
         sorted_values_copy = sorted_values.copy()
+        print(sorted_values_copy)
         for i in range(0, 7):
             sorted_values_copy[i+2] = sorted_values[i]
 
