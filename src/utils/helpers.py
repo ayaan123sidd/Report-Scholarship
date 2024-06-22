@@ -1,12 +1,32 @@
-from utils.constants import SUBJECT_DATA
+from utils.constants import QUALIFICATION_DATA
 
 
-def get_class_and_test_id(subject):
-    if subject in SUBJECT_DATA:
-        data = SUBJECT_DATA[subject]
-        return data.get("class_id", 0), data.get("test_id", 0)
-    else:
+def get_qualification_data(qualification):
+    if qualification in QUALIFICATION_DATA:
+        return QUALIFICATION_DATA[qualification]
+    return None
+
+
+def get_scholarship_data(qualification, scholarship):
+    qualification_data = get_qualification_data(qualification)
+
+    if qualification_data is None:
         return None
+
+    scholarship_data = qualification_data.get("scholarships")
+    if scholarship in scholarship_data:
+        data = scholarship_data.get(scholarship, None) or None
+        return data
+    return None
+
+
+def get_class_and_test_id(qualification, scholarship):
+    data = get_scholarship_data(qualification, scholarship)
+
+    if data is None:
+        return None
+
+    return data.get("class_id", 0), data.get("test_id", 0)
 
 
 # Function to calculate the sum of marks for correct answers
@@ -14,26 +34,32 @@ def calculate_sum_marks(marks):
     return sum(mark for mark in marks if mark == 1)
 
 
-def process_question_data(questions, subject):
-    subject_data = SUBJECT_DATA[subject]
-    total_questions = subject_data.get('total_questions', 0)
+def process_question_data(test_parts, qualification, subject):
+    scholarship_data = get_scholarship_data(qualification, subject)
+    total_questions = scholarship_data.get("total_questions", 0)
     marks_array = [0] * total_questions
     time_taken_array = [0] * total_questions
 
-    for i in range(total_questions):
-        if i < len(questions):
-            question = questions[i]
-            if "markedInputs" in question:
-                marked_input = question["markedInputs"][0]
-                if "is_attempted" in marked_input:
-                    # flags for marks_array[i] , i = 1 correct, 0 = incorrect, 2 = unattempted
-                    if marked_input["is_attempted"] == 1:
-                        marks_array[i] = 1 if marked_input.get("correct", 0) == 1 else 0
-                    else:
-                        marks_array[i] = 2
+    question_index = 0
 
-            # Extract time taken per question
-            time_taken_array[i] = question.get("user_question_time", 0)
+    for test_part in test_parts:
+        questions = test_part.get("questions", [])
+        for question in questions:
+            if question_index < total_questions:
+                if "markedInputs" in question:
+                    marked_input = question["markedInputs"][0]
+                    if "is_attempted" in marked_input:
+                        # flags for marks_array[i] , i = 1 correct, 0 = incorrect, 2 = unattempted
+                        if marked_input["is_attempted"] == 1:
+                            marks_array[question_index] = (
+                                1 if marked_input.get("correct", 0) == 1 else 0
+                            )
+                        else:
+                            marks_array[question_index] = 2
+
+                # Extract time taken per question
+                time_taken_array[question_index] = question.get("user_question_time", 0)
+                question_index += 1
 
     return marks_array, time_taken_array
 
@@ -47,24 +73,45 @@ def calculate_counts(marks):
     incorrect_percentage = (incorrect / total) * 100
     unattempted_percentage = (unattempted / total) * 100
 
-    return total, correct, incorrect, unattempted, correct_percentage, incorrect_percentage, unattempted_percentage
+    return (
+        total,
+        correct,
+        incorrect,
+        unattempted,
+        correct_percentage,
+        incorrect_percentage,
+        unattempted_percentage,
+    )
+
+
+def calculate_time_efficiency(max_marks, marks_scored, max_time, time_taken):
+    if marks_scored == 0 and time_taken == 0:
+        efficiency = 0
+    else:
+        efficiency = (
+            marks_scored / max_marks * 0.7 + (1 - min(time_taken, max_time) / max_time) * 0.3
+        ) * 100
+    return round(efficiency)
 
 
 # Passing probability
 def calculate_passing_probability(score):
-    if score > 80:
-        return 0.9 + ((score - 80) / 20) * 0.1
+    if score < 10:
+        return 20.0
+    elif score > 80:
+        P = min(0.63 + ((score - 80) / 20) * 0.07, 0.8)
     elif score >= 50:
-        return 0.7 + ((score - 50) / 30) * 0.2
+        P = min(0.49 + ((score - 50) / 30) * 0.24, 0.8)
     elif score >= 30:
-        return 0.5 + ((score - 30) / 20) * 0.2
+        P = min(0.35 + ((score - 30) / 20) * 0.24, 0.8)
     elif score >= 25:
-        return 0.3 + ((score - 25) / 5) * 0.2
+        P = min(0.21 + ((score - 25) / 5) * 0.24, 0.8)
     elif score >= 10:
-        return 0.1 + ((score - 10) / 15) * 0.2
-    else:
-        return (score / 10) * 0.1
-
+        P = min(0.07 + ((score - 10) / 15) * 0.24, 0.8)
+    
+    # Transform P to the new range [30, 60]
+    P_new = 30 + 37.5 * P
+    return P_new
 
 # Function to split label into two lines after a whitespace
 def split_label(label):
@@ -96,6 +143,7 @@ def generate_front_page(
     minutes,
     seconds,
     rank,
+    percentile,
     rank1_accuracy,
     avg_percent,
     rank1_marks,
@@ -105,42 +153,13 @@ def generate_front_page(
     average_time_taken,
     rank1_time_efficiency,
     avg_time_efficiency,
-    # pharmaceutical_chemistry_avg_time,
-    # pharmaceutical_chemistry_correct,
-    # pharmaceutical_chemistry_total,
-    # pharmaceutical_chemistry_correct_percentage,
-    # pharmaceutical_chemistry_incorrect,
-    # pharmaceutical_chemistry_incorrect_percentage,
-    # pharmaceutical_chemistry_unattempted,
-    # pharmaceutical_chemistry_unattempted_percentage,
-    # pharmacology_avg_time,
-    # pharmacology_correct,
-    # pharmacology_total,
-    # pharmacology_correct_percentage,
-    # pharmacology_incorrect,
-    # pharmacology_incorrect_percentage,
-    # pharmacology_unattempted,
-    # pharmacology_unattempted_percentage,
-    # physiology_avg_time,
-    # physiology_correct,
-    # physiology_total,
-    # physiology_correct_percentage,
-    # physiology_incorrect,
-    # physiology_incorrect_percentage,
-    # physiology_unattempted,
-    # physiology_unattempted_percentage,
-    # pharmaceutics_and_therapeutics_avg_time,
-    # pharmaceutics_and_therapeutics_correct,
-    # pharmaceutics_and_therapeutics_total,
-    # pharmaceutics_and_therapeutics_correct_percentage,
-    # pharmaceutics_and_therapeutics_incorrect,
-    # pharmaceutics_and_therapeutics_incorrect_percentage,
-    # pharmaceutics_and_therapeutics_unattempted,
-    # pharmaceutics_and_therapeutics_unattempted_percentage,
     strong_areas,
     weak_areas,
     passing_result,
     topics_data,
+    top_opportunities,
+    top_threats,
+    max_marks,
 ):
 
     summary_to_display = get_summary_to_display(percent)
@@ -170,7 +189,7 @@ def generate_front_page(
                 border-collapse: collapse;
                 margin:0 auto;
                 margin-bottom: 20px;
-                margin-top:60px;
+                margin-top:40px;
             }}
             th, td {{
                 border: 2px solid #ddd;
@@ -197,7 +216,7 @@ def generate_front_page(
             background-color: #fff;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            margin-top:200px;
+            margin-top:100px;
             }}
             .summary2 {{
             margin-top: 20px;
@@ -230,11 +249,10 @@ def generate_front_page(
             }}
             .report-title {{
                 font-size: 3em;
-                margin-top: 90px;
+                margin-top: 60px;
                 color: #555;
                 border-bottom: 2px solid #555;
                 display: inline-block;
-                padding-bottom: 10px;
             }}
             .generative{{
                 font-size:2.5rem;
@@ -250,14 +268,9 @@ def generate_front_page(
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
                 font-size:18px;
             }}
-            .note{{
-                text-align: justify;
-                margin-top:30px;
-                padding: 0px 50px;
-            }}
             .how{{
-                 text-align: justify;
-                margin-top:30px;
+                text-align: justify;
+                margin-top:50px;
                 padding: 0px 70px;
                 padding-top:20px;
                 font-size:18px;
@@ -265,16 +278,6 @@ def generate_front_page(
             }}
             .how h1{{
                 color:#0FB995
-            }}
-            .descl{{
-                text-align: justify;
-                margin-top:350px;
-                padding: 0px 70px;
-                color:gray;
-                padding-bottom:50px
-            }}
-            .descl ul{{
-                
             }}
             .note p{{
               font-size:13px
@@ -285,15 +288,21 @@ def generate_front_page(
                 background-color: #fff;
                 border-radius: 8px;
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                font-size:17px;
                 margin:0 40px;
                 margin-top: 50px;
             }}
+            .summary ul > li {{
+                font-size: 17px !important;
+            }}
+            .swot-analysis {{
+                padding: 0px 70px;
+                text-align: justify;
+                padding-top: 250px;
+            }}
             .passprob{{
                 text-align: justify;
-                margin-top:50px;
                 padding: 0px 70px;
-                padding-top:50px
+                margin-top:50px;
             }}
             .passprob div{{
                 font-size:18px;
@@ -314,6 +323,17 @@ def generate_front_page(
             .student-info p {{
                 margin: 10px 0;
             }}
+            .assessment-desc {{
+                margin-bottom: 50px;
+            }}
+            .areas {{
+                font-size: 17px;
+            }}
+            .area-value {{
+                color: #0FB995;
+                font-weight: bold;
+                font-style: italic;
+            }}
         </style>
     </head>
     <body>
@@ -325,23 +345,23 @@ def generate_front_page(
             </div>
             <div class="student-info">
                 <p><strong>Name: </strong>{student_name}</p>
-                <p><strong>Percentage: </strong> {percent}%</p>
+                <p><strong>Percentage: </strong> {percent:.2f}%</p>
                 <p><strong>Accuracy: </strong> {accuracy}%</p>
-                <p><strong>Marks Obtained (out of 50): </strong> {marks}</p>
-                <p><strong>Time taken: </strong> {minutes} minutes, {seconds} seconds</p>
+                <p><strong>Marks Obtained (out of {max_marks}): </strong> {marks}</p>
+                <p><strong>Time Taken: </strong> {minutes} minutes, {seconds} seconds</p>
                 <p><strong>Time Efficiency: </strong> {time_efficiency2}% </p>
-                <p><strong>Rank of Student: </strong> {rank} </p>
-                {'<p class="equal"><em><strong>Note: </strong>Percentage and accuracy are equal because the student attempted all questions.</em></p>' if percent == accuracy else ''}
+                <p><strong>Percentile of Student: </strong> {percentile} %</p>
+                <p class="equal"><em><strong>Time Efficiency:</strong> Number of correct answers marked relative to the time expended. (How Efficiently time was managed) </em></p>
+                {"<p class='equal'><em><strong>Note: </strong>Percentage and accuracy are equal because the student attempted all questions.</em></p>" if f'{percent:.2f}' == accuracy else ""}
             </div>
             </div>
-           
 
             <table>
                 <caption><h3>Performance Comparison</h3></caption>
                 <thead>
                     <tr>
                         <th></th>
-                        <th>Top performer</th>
+                        <th>Top Performer</th>
                         <th>{student_name}</th>
                         <th>Average Score</th>
                     </tr>
@@ -350,7 +370,7 @@ def generate_front_page(
                     <tr>
                         <td>Percentage Obtained: (%)</td>
                         <td>{rank1_accuracy}</td>
-                        <td>{percent}</td>
+                        <td>{percent:.2f}</td>
                         <td>{avg_percent}</td>
                     </tr>
                     <tr>
@@ -400,7 +420,7 @@ def generate_front_page(
             </div>
 
              <div class="summary" id="summary1" style="display:{'block' if summary_to_display == 1 else 'none'};" >
-                <h3>Student Summary1</h3>
+                <h3>Student Summary</h3>
                 <ul>
                 <li>
                 <p>The student exhibited commendable performance in the online scholarship test, with an accuracy rate of <strong>{accuracy}%</strong>, showing effort and willingness to engage with the material. While the accuracy rate is below the desired level, the student's commitment to attempting questions is notable.
@@ -418,7 +438,7 @@ def generate_front_page(
             </div>
 
              <div class="summary" id="summary2" style="display:{'block' if summary_to_display == 2 else 'none'};" >
-                <h3>Student Summary2</h3>
+                <h3>Student Summary</h3>
                 <ul>
                 <li>
                 <p>The student achieved an average performance in the online scholarship test with an accuracy rate of <strong>{accuracy}%</strong>, indicating room for improvement in both accuracy and time efficiency. 
@@ -434,7 +454,7 @@ def generate_front_page(
             </div>
 
              <div class="summary" id="summary3" style="display:{'block' if summary_to_display == 3 else 'none'};" >
-                <h3>Student Summary3</h3>
+                <h3>Student Summary</h3>
                 <ul>
                 <li>
                 <p>The student exhibited below-average performance in the online scholarship test with an accuracy rate of <strong>{accuracy}%</strong>, indicating challenges in both accuracy and time management. 
@@ -452,82 +472,117 @@ def generate_front_page(
         </div>
         <div class="container2">
         <h1 class='generative'>AI-Powered Assessment</h1>
-        <p><em>AI-Generated Comprehensive Test Analysis.</em></p>
+        <p class="assessment-desc"><em>This AI-Powered Assessment test analyzes user data in detail. It evaluates skills and knowledge accurately, providing personalized feedback and unbiased grading. The AI efficiently processes large data volumes, offering deep insights into user strengths and improvement areas.</em></p>
         {''.join([
-            f"""
-            <div class="summary2">
-                <h2>{topic.get("name")}</h2>
-                <p>Average Time per Question: {topic.get("avg_time"):.1f} seconds</p>
-                <p>Correct Answers: {topic.get("correct_counts")} out of {topic.get("total")} ({topic.get("correct_percentage"):.1f}%)</p>
-                <p>Incorrect Answers: {topic.get("incorrect_counts")} out of {topic.get("total")} ({topic.get("incorrect_percentage"):.1f}%)</p>
-                <p>Unattempted: {topic.get("unattempted_counts")} out of {topic.get("total")} ({topic.get("unattempted_percentage"):.1f}%)</p>
+            f'''
+            <div class="summary2" style="{'padding-bottom: 170px;' if i == 4 else ''}">
+            <h2>{topic.get("name")}</h2>
+            <p>Average Time per Question: {float(topic.get("avg_time", 0.0)):.1f} seconds</p>
+            <p>Correct Answers: {topic.get("correct_counts")} out of {topic.get("total")} ({topic.get("correct_percentage"):.1f}%)</p>
+            <p>Incorrect Answers: {topic.get("incorrect_counts")} out of {topic.get("total")} ({topic.get("incorrect_percentage"):.1f}%)</p>
+            <p>Unattempted: {topic.get("unattempted_counts")} out of {topic.get("total")} ({topic.get("unattempted_percentage"):.1f}%)</p>
             </div>
-            """ for topic in topics_data
+            ''' for i, topic in enumerate(topics_data)
         ])}
-        <div class="summary2">
-            <h2>Strengths and Weaknesses</h2>
-            <p><strong>Strong Areas:</strong> {strong_areas}</p>
-            <p><strong>Weak Areas:</strong> {weak_areas}</p>
-        </div>
-
     </div>
-    <div class="note">
-                <h4>Note</h4>
-                <ul>
-                <li>
-                <p>Graphs Provided: The report includes various graphs that visualize data related to the student's performance. These graphs represent different metrics such as accuracy, marks obtained, time taken, or other relevant factors.</p>
-                </li>
-                <li>
-                <p>Analysis: The graphs are not just visual representations of data; they are the result of an analysis process. This analysis involves interpreting the student's performance data in comparison to the performance data of other users.</p>
-                </li>
-                <li>
-                <p>Comparison to Top 10 Users: The analysis specifically compares the student's performance to that of the top 10 users. This comparison provides valuable insights into how the student's performance measures up against the top performers in the given context.</p>
-                </li>
-                <li>
-                <p>Purpose: The purpose of this analysis is to evaluate the student's performance relative to a high-performing group. By comparing the student to the top 10 users, the report aims to identify areas of strength and areas for improvement for the student.</p>
-                </li>
-                </ul>
-            </div>
-        </div>
-        
-        
-        <div class="passprob">
-            <h2>Passing Probability</h2>
-            <div>Based on your performance in the scholarship mock test, your estimated probability of passing the actual exam is <span class="pp" >{passing_result}%</span>. While this probability is derived from a detailed analysis of your mock test scores and may not fully reflect your potential, at Academically, we are committed to helping you surpass expectations and realize your aspirations. We'll collaborate closely to enhance your preparation and ensure you're primed for success on exam day.</div>
-        </div>
+    </div>
 
-        <div class="how">
-        <h2>How <span style="color:#103AC5;font-weight:700">Academically</span> Can Help You Succeed:</h2> At<span style="color:#103AC5;font-weight:700"> Academically</span>, we are committed to helping you excel in your exam preparation. We offer a comprehensive suite of resources designed to enhance your learning experience and boost your chances of success. Our offerings include live interactive lectures with experienced instructors frm around the world, a wide range of mock exams to simulate the actual test environment, detailed study handouts that cover all essential topics, and much more. Our goal is to provide you with the tools and support you need to confidently approach your exam and achieve outstanding results. Join us at <span style="color:#103AC5;font-weight:700">Academically</span> and take the next step towards your academic success.
-        </div>
+    <div class="summary2 swot-analysis">
+        <h2 style="{'color:#103AC5'}">SWOT Analysis</h2>
+        <p><strong class="areas">Strong Areas:</strong> {strong_areas}</p>
+        <p><strong class="areas">Weak Areas:</strong> {weak_areas}</p>
+        <p><strong class="areas">Opportunities: </strong>Topics <span class="area-value">{top_opportunities[0]}</span> and <span class="area-value">{top_opportunities[1]}</span> demonstrate high time efficiency scores, showing strong proficiency and potential for further mastery. This indicates efficient time management and deep understanding. Focusing on these topics can lead to advanced learning and higher scores through exploring related concepts and refining problem-solving skills.</p>
+        <p><strong class="areas">Threats:</strong> However, <span class="area-value">{top_threats[0]}</span> and <span class="area-value">{top_threats[1]}</span> exhibit lower time efficiency scores, suggesting challenges in time management or understanding. To improve, prioritize enhancing time management skills, breaking down complex topics, and seeking additional study resources. Addressing these areas will enhance efficiency and comprehension, leading to better performance in assessments.</p>
+    </div>
         
-        <div class="descl">
-            <h4>Disclaimer:</h4>
-            <ul>
-                <li>
-                <p>This report is intended solely for students who participated in the scholarship test. The data and analysis may not be relevant for students who haven't taken the test.</p>
-                </li>
-                <li>
-                <p>The analytics presented in this report are based on the responses and information provided by the test takers themselves. While we strive for accuracy, it's important to understand the data's origin.</p>
-                </li>
-                <li>
-                <p>The "passing probability" reflects your performance in the scholarship test, not necessarily the actual scholarship exam. It's a tool to help you make informed decisions, but it shouldn't be the sole factor.</p>
-                </li>
-                <li>
-                <p>We take steps to ensure the report's accuracy, but discrepancies or errors are always a possibility. We cannot assume responsibility for any such issues.</p>
-                </li>
-                 <li>
-                <p>The provided probabilities are estimates based on test performance, not guarantees of your actual exam results.</p>
-                </li>
-                <li>
-                <p>We recommend that you independently verify any critical information presented in this report. Additionally, consulting with advisors or mentors can provide valuable insights for your scholarship journey.</p>
-                </li>
-                <li>
-                <p>The institution is not liable for any actions you take based on the information in this report. It's your responsibility to use this information alongside other resources and guidance.</p>
-                </li>
-                </ul>
-        </div>
+    <div class="passprob">
+        <h2 style="{'color:#103AC5'}">Passing Probability</h2>
+        <div>Based on your performance in the scholarship mock test, your estimated probability of passing the actual exam is <span class="pp" >{passing_result}%</span>. While this probability is derived from a detailed analysis of your mock test scores and may not fully reflect your potential, at Academically, we are committed to helping you surpass expectations and realize your aspirations. We'll collaborate closely to enhance your preparation and ensure you're primed for success on exam day.</div>
+    </div>
+
+    <div class="how">
+        <h2>How <span style="color:#103AC5;font-weight:700">Academically</span> Can Help You Succeed:</h2> At<span style="color:#103AC5;font-weight:700"> Academically</span>, we're dedicated to helping you excel in your exam preparation. Join us and gain access to a comprehensive suite of resources designed to enhance your learning experience and boost your chances of success. Benefit from live interactive lectures with experienced instructors from around the world, a wide range of AI-powered mock exams to simulate your actual test environment, and detailed study handouts that cover all essential topics.
+        <br>
+        <br>
+        Our personalized approach identifies your areas of improvement and provides targeted practice to help you overcome challenges. We also focus on strengthening your strong topics using advanced AI mocks. With a proven 93% success rate, we're confident in our ability to help you achieve outstanding results.
+        <br>
+        <br>
+        Our goal is to provide you with the tools and support you need to confidently approach your exam and succeed. Join us at Academically and take the next step toward your academic success.
+    </div>
     </body>
     </html>
 
+    """
+    return html_content
+
+
+def generate_desclaimer():
+    html_content = """
+    <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Student Report</title>
+            <style>
+                html{
+                    background-color: #f9f9f9;
+                }
+                body {
+                    font-family: Arial, sans-serif;
+                    margin: 0;
+                    background-color: #f9f9f9;
+                    color: #333;
+                }
+                .descl {
+                    text-align: justify;
+                    padding: 0px 50px;
+                    padding-top: 60px;
+                    color:gray;
+                    padding-bottom:50px
+                }
+                .descl > h4 {
+                    font-size: 20px;
+                    padding-bottom: 20px;
+                }
+                .text {
+                    margin-top: 200px;
+                    text-align: center;
+                    font-size: 20px;
+                    padding-bottom: 450px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="descl">
+                <h4>Disclaimer:</h4>
+                <ul>
+                    <li>
+                    <p>This report is intended solely for students who participated in the scholarship test. The data and analysis may not be relevant for students who haven't taken the test.</p>
+                    </li>
+                    <li>
+                    <p>The analytics presented in this report are based on the responses and information provided by the test takers themselves. While we strive for accuracy, it's important to understand the data's origin.</p>
+                    </li>
+                    <li>
+                    <p>The "passing probability" reflects your performance in the scholarship test, not necessarily the actual scholarship exam. It's a tool to help you make informed decisions, but it shouldn't be the sole factor.</p>
+                    </li>
+                    <li>
+                    <p>We take steps to ensure the report's accuracy, but discrepancies or errors are always a possibility. We cannot assume responsibility for any such issues.</p>
+                    </li>
+                    <li>
+                    <p>The provided probabilities are estimates based on test performance, not guarantees of your actual exam results.</p>
+                    </li>
+                    <li>
+                    <p>We recommend that you independently verify any critical information presented in this report. Additionally, consulting with advisors or mentors can provide valuable insights for your scholarship journey.</p>
+                    </li>
+                    <li>
+                    <p>The institution is not liable for any actions you take based on the information in this report. It's your responsibility to use this information alongside other resources and guidance.</p>
+                    </li>
+                </ul>
+
+                <p class="text"> ---------------------------------------------- REPORT END ---------------------------------------------- </p>
+            </div>
+        </body>
+    </html>
     """
     return html_content

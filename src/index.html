@@ -8,6 +8,7 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
       rel="stylesheet"
     />
+    <link rel="icon" href="/assets/logoAcad.png" type="image/png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>User Marks</title>
     <style>
@@ -22,6 +23,7 @@
       .made {
         margin: 0 auto;
         text-align: center;
+        padding-bottom: 20px;
       }
 
       .container {
@@ -193,12 +195,12 @@
         </select>
 
         <label for="scholarship">Select Scholarship:</label>
-        <select name="subject" id="subject" required>
+        <select name="scholarship" id="scholarship" required>
           <option value="">--Select Scholarship--</option>
         </select>
         <div>
           <button class="button-50" type="submit">Fetch Marks</button>
-          <button class="button-50" onclick="runPythonScript()">
+          <button type="button" class="button-50" onclick="runPythonScript()">
             Download PDF
           </button>
         </div>
@@ -210,6 +212,7 @@
       <div id="error"></div>
     </div>
     <div class="made">Made with love from Product Team ❤️</div>
+    <div class="made">Contact <a href="mailto:developer@academically.com">developer@academically.com</a> If you face any issues</div>
 
     <script>
       document
@@ -217,7 +220,7 @@
         .addEventListener("submit", function (event) {
           event.preventDefault();
           const email = document.getElementById("email").value;
-          const subject = document.getElementById("subject").value;
+          const scholarship = document.getElementById("scholarship").value;
           const loader = document.getElementById("loader");
 
           function convertSecondsToMinutes(seconds) {
@@ -229,9 +232,12 @@
           loader.style.display = "block";
 
           // Using the endpoint to fetch the student details and marks
-          fetch(`/studentDetails?email=${email}&subject=${subject}`)
+          fetch(`/studentDetails?email=${email}&scholarship=${scholarship}`)
             .then((response) => {
               if (!response.ok) {
+                if (response.status === 400) { // Changed: Added specific check for 400 status
+                throw new Error("User does not exist"); // Changed: Throw specific error message
+              }
                 throw new Error(`HTTP status ${response.status}`);
               }
               return response.json();
@@ -297,23 +303,33 @@
               loader.style.display = "none";
               document.getElementById("userDetails").innerHTML = "";
               document.getElementById("userMarks").innerHTML = "";
-              document.getElementById("error").textContent =
-                "There was a problem fetching the data. Please try again later.";
+              // document.getElementById("error").textContent =
+              //   "There was a problem fetching the data. Please try again later.";
+              if (error.message === "User does not exist") { // Changed: Check specific error message
+                document.getElementById("error").textContent = "User does not exist. Please check the email."; // Changed: Display specific error message
+              } else {
+                document.getElementById("error").textContent =
+                  "There was a problem fetching the data. Please try again later.";
+              }
             });
         });
 
       function runPythonScript() {
+        const loader = document.getElementById("loader");
+        loader.style.display = "block";
         const studentIdElm = document.getElementById("studentId");
-        const subjectElm = document.getElementById("subject");
+        const qualificationElm = document.getElementById("qualification");
+        const scholarshipElm = document.getElementById("scholarship");
 
-        if (!studentIdElm || !subjectElm) {
+        if (!studentIdElm || !qualificationElm || !scholarshipElm) {
           alert("Please fetch student marks first.");
           return;
         }
 
         const payload = {
           studentId: studentIdElm.value,
-          subject: subjectElm.value,
+          qualification: qualificationElm.value,
+          scholarship: scholarshipElm.value,
         };
 
         fetch("/run-script", {
@@ -342,7 +358,10 @@
             // Handle error
             console.error("Error running Python script:", error);
             alert("Error running Python script. Please try again later.");
-          });
+          })
+          .finally(() => {
+            loader.style.display = "none";
+          })
       }
 
       function updateScholarship() {
@@ -373,7 +392,7 @@
       };
 
       const qualification = document.getElementById('qualification').value;
-      const scholarships = document.getElementById('subject');
+      const scholarships = document.getElementById('scholarship');
 
       // Clear previous options
       scholarships.innerHTML = '<option value="">--Select Scholarship--</option>';

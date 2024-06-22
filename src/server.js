@@ -8,7 +8,7 @@ import path from "path";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 import { spawn } from "child_process";
-import { SUBJECT_DATA } from "./utils/constants.js";
+import { SCHOLARSHIP_DATA } from "./utils/constants.js";
 
 dotenv.config();
 
@@ -16,7 +16,7 @@ const httpsAgent = new https.Agent({
   rejectUnauthorized: false,
 });
 
-const API_KEY = "8209d837743ef9f4b1699ffaa36fe69a"  //process.env.API_KEY;
+const API_KEY = "62fd09ca0e4bda109687a49faee18bcd"  //process.env.API_KEY;
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -28,21 +28,23 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization", "ORGID", "apiKey"], // Added 'apiKey' to allowed headers
   })
 );
+const __dirname = dirname(fileURLToPath(import.meta.url));
+app.use('/assets', express.static(path.join(__dirname, '../assets')));
 app.use(express.json());
 
 app.get("/studentDetails", async (req, res) => {
-  const { email, subject } = req.query;
+  const { email, scholarship } = req.query;
   console.log("Received email:", email);
-  console.log("Received subject:", subject);
+  console.log("Received scholarship:", scholarship);
 
   try {
-    // Dynamic subject handling
+    // Dynamic scholarship handling
     let classId, testId;
-    const subjectData = SUBJECT_DATA[subject];
-    if (subjectData) {
-      [classId, testId] = subjectData;
+    const scholarshipData = SCHOLARSHIP_DATA[scholarship];
+    if (scholarshipData) {
+      [classId, testId] = scholarshipData;
     } else {
-      return res.status(400).json({ message: `Subject not found: ${subject}` });
+      return res.status(400).json({ message: `Scholarship not found: ${scholarship}` });
     }
 
     const studentApiUrl = `https://lms.academically.com/nuSource/api/v1/student/search?institution_id=4502&student_email=${email}`;
@@ -57,6 +59,9 @@ app.get("/studentDetails", async (req, res) => {
       agent: httpsAgent,
     });
     if (!studentResponse.ok) {
+      if (studentResponse.status === 400) {
+        return res.status(400).json({ message: "User does not exist" });
+      }
       throw new Error(
         `API call failed1 with status: ${studentResponse.status}`
       );
@@ -93,7 +98,7 @@ app.get("/studentDetails", async (req, res) => {
   }
 });
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+
 app.get("/", (req, res) => {
   const indexPath = path.join(__dirname, "index.html");
   const indexContent = readFileSync(indexPath, "utf-8");
@@ -105,6 +110,7 @@ let lock = false;
 const queue = [];
 
 app.post("/run-script", (req, res) => {
+  console.log("run-script endpoint called")
   queue.push({ req, res });
   processQueue();
 });
@@ -117,7 +123,7 @@ function processQueue() {
 
   lock = true;
   const { req, res } = queue.shift();
-  const { studentId, subject } = req.body;
+  const { studentId, qualification, scholarship } = req.body;
 
   try {
     const pythonExecutable = process.env.PYTHON_EXECUTABLE_PATH;
@@ -125,7 +131,8 @@ function processQueue() {
     const pythonProcess = spawn(pythonExecutable, [
       scriptPath,
       studentId,
-      subject,
+      qualification,
+      scholarship,
     ]);
 
     let output = "";

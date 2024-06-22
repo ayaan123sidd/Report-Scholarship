@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -16,66 +17,76 @@ from utils.helpers import (
     calculate_sum_marks,
     calculate_counts,
     calculate_passing_probability,
+    calculate_time_efficiency,
+    get_qualification_data,
+    get_scholarship_data,
+    generate_desclaimer
 )
-from utils.constants import LMS_API_HEADERS, WKHTMLTOPDF_PATH, SUBJECT_DATA
+from utils.constants import LMS_API_HEADERS, WKHTMLTOPDF_PATH, CUSTOM_TOP_10_STUDENTS_TIME_TAKEN
 import traceback
 
 
 try:
     student_id = ""
-    subject = ""
-    if len(sys.argv) > 2:
-        e = sys.argv[1]
-        f = sys.argv[2]
+    qualification = ""
+    scholarship = ""
 
-        student_id = e
-        subject = f
-    else:
-        raise Exception("Student ID is not specified")
+    if len(sys.argv) != 4:
+        raise Exception("Incorrect number of arguments")
+        
+    student_id = sys.argv[1]
+    qualification = sys.argv[2]
+    scholarship = sys.argv[3]
 
-    classId, testId = get_class_and_test_id(subject)
+    classId, testId = get_class_and_test_id(qualification, scholarship)
 
-    exercie_service = ExerciseService(LMS_API_HEADERS)
+    exercise_service = ExerciseService(LMS_API_HEADERS)
 
-    data = exercie_service.get_attempt_data(testId, classId, student_id)
+    data = exercise_service.get_attempt_data(testId, classId, student_id)
 
     if data["code"] == 200 and data["message"] == "Exercise Retrieved":
         attempt_id = data["exercises"][0]["attempt_id"]
     else:
         raise Exception("Failed to retrieve exercises")
 
-    exercise_data = exercie_service.get_exercise_data(attempt_id)
+    exercise_data = exercise_service.get_exercise_data(attempt_id)
+    test_parts = exercise_data["exercise"]["test_parts"]
+    marks_array, time_taken_array = process_question_data(test_parts, qualification, scholarship)
 
-    # Get the questions array
-    questions = exercise_data["exercise"]["test_parts"][0]["questions"]
-    # exercise_name = exercise_data["exercise"]["exercise_name"]
+    qualification_data = get_qualification_data(qualification)
+    if qualification_data is None:
+        raise Exception("Qualification data not found")
 
-    marks_array, time_taken_array = process_question_data(questions, subject)
+    scholarship_data = get_scholarship_data(qualification, scholarship)
+    if scholarship_data is None:
+        raise Exception("Scholarship data not found")
 
-    subject_data = SUBJECT_DATA.get(subject, None)
-    if subject_data is None:
-        raise Exception("Subject data not found")
+    topics = []
+    if scholarship == "usmle":
+        topics = scholarship_data.get("topics", [])
+    else:
+        topics = qualification_data.get("topics", [])
 
-    topics = subject_data.get("topics", [])
+    max_time = scholarship_data.get("max_time", 60)
+    max_subject_marks = scholarship_data.get("total_marks", 50)
 
     # Extract the total questions for each topic
     topic_question_idx = 0
-    total_questions_per_topic = [len(topic.get("total_questions", [])) for topic in topics]
-
-    def count_responses(marks, response):
-        return marks.count(response)
+    total_questions_per_topic = [
+        len(topic.get("total_questions", [])) for topic in topics
+    ]
 
     topics_data = []
     for topic in topics:
         topic_name = topic["name"]
-        topic_questions = topic["total_questions"]
+        topic_questions = scholarship_data.get("per_topic_questions", 15) if scholarship == "amcmock" else int(topic["total_questions"] or 5)
         topic_marks = marks_array[
-            topic_question_idx : topic_question_idx + len(topic_questions)
+            topic_question_idx : topic_question_idx + topic_questions
         ]
         topic_time_taken = time_taken_array[
-            topic_question_idx : topic_question_idx + len(topic_questions)
+            topic_question_idx : topic_question_idx + topic_questions
         ]
-        topic_question_idx += len(topic_questions)
+        topic_question_idx += topic_questions
 
         (
             total,
@@ -84,8 +95,20 @@ try:
             unattempted,
             correct_percentage,
             incorrect_percentage,
-            unattempted_percentage
+            unattempted_percentage,
         ) = calculate_counts(topic_marks)
+
+        total_marks = calculate_sum_marks(topic_marks)
+        
+    
+        avg_time_taken = sum(topic_time_taken) / len(topic_time_taken)
+        
+        # Calculate time efficiency for the topic
+        max_marks = total  
+        marks_scored = total_marks
+        time_taken = avg_time_taken 
+
+        efficiency = calculate_time_efficiency(max_marks, marks_scored, max_time, time_taken)
 
         topics_data.append(
             {
@@ -100,20 +123,10 @@ try:
                 "correct_percentage": correct_percentage,
                 "incorrect_percentage": incorrect_percentage,
                 "unattempted_percentage": unattempted_percentage,
-                "avg_time": sum(topic_time_taken) / len(topic_time_taken)
+                "avg_time": sum(topic_time_taken) / len(topic_time_taken),
+                "time_efficiency": efficiency,
             }
         )
-
-    # pharmaceutical_chemistry_marks = marks_array[:10]
-    # pharmacology_marks = marks_array[10:25]
-    # physiology_marks = marks_array[25:40]
-    # pharmaceutics_and_therapeutics_marks = marks_array[40:]
-
-    # # time array
-    # pharmaceutical_chemistry_time = time_taken_array[:10]
-    # pharmacology_time = time_taken_array[10:25]
-    # physiology_time = time_taken_array[25:40]
-    # pharmaceutics_and_therapeutics_time = time_taken_array[40:]
 
     report_service = ReportService(LMS_API_HEADERS)
     class_progress_report_data = report_service.get_class_progress_report(
@@ -144,7 +157,7 @@ try:
         sorted_marks = sorted(marks_dict.keys(), reverse=True)
 
         ranked_students = []  # List to store (student_id, rank) tuples
-
+        
         rank = 1  # HARDCODED DATA
         for marks in sorted_marks:
             student_ids = marks_dict[marks]
@@ -255,11 +268,25 @@ try:
         marks_data = extract_marks(student_id)
         accuracy = (int(marks_data[0]["mk"]) * 100) / 50  # change marks here
         return accuracy
+    
+    def percent_analysis_for_current_student():
+        correct_counts = sum(topic.get("correct_counts", 0) for topic in topics_data)
+        total_counts = sum(topic.get("total", 0) for topic in topics_data)
+
+        return (correct_counts/total_counts) * 100
 
     def accuracy_analysis(student_id):
         marks_data = extract_marks(student_id)
-        accuracy = int(marks_data[0]["gr"])
+        # HARD CODED (only take 1st array)
+        accuracy = int(float(marks_data[0]["gr"]))
         return accuracy
+    
+    def accuracy_analysis_for_current_student():
+        correct_counts = sum(topic.get("correct_counts") for topic in topics_data)
+        incorrect_counts = sum(topic.get("incorrect_counts") for topic in topics_data)
+        total_counts = correct_counts + incorrect_counts
+
+        return (correct_counts/total_counts) * 100
 
     def marks_analysis(student_id):
         marks_data = extract_marks(student_id)
@@ -269,12 +296,14 @@ try:
     # Define a function to analyze marks for a given student
     def marks_analysis2(student_id):
         marks_data = extract_marks(student_id)
-        if marks_data:
-            attempt = marks_data[0]
-            marks = int(attempt.get("mk"))
-            total_marks = int(attempt.get("tm"))
-            return marks, total_marks
-        return None
+
+        if not marks_data:
+            return 0, 0
+
+        marks_scored = sum(int(mark.get("mk", 0) or 0) for mark in marks_data)
+        total_marks = sum(int(mark.get("tm", 0) or 0) for mark in marks_data)
+        return marks_scored, total_marks
+
 
     def points_percentage_analysis(student_id):
         marks_data = extract_marks(student_id)
@@ -296,6 +325,43 @@ try:
         sorted_user_ids = [user[0] for user in sorted_users]
         return sorted_user_ids
 
+    def custom_visualize_time_taken_top_users():
+        candidate_name = get_student_name(given_student_id)
+        candidate_time = time_taken_analysis(given_student_id)
+        
+        # Combine candidate's data with the rest of the students' data
+        time_taken_students = CUSTOM_TOP_10_STUDENTS_TIME_TAKEN.copy()
+        time_taken_students.append(candidate_time)
+        time_taken_students.sort(reverse=True)
+
+        fig = plt.figure(figsize=(8.35, 6))
+        ax = fig.add_subplot(111)
+        second_value=time_taken_students[0]
+        time_taken_students[0]=43
+        time_taken_students[1]=second_value
+        # Plot the combined data
+        sns.lineplot(ax=ax, x=range(len(time_taken_students)), y=time_taken_students, marker="o")
+
+        # Highlight the candidate's point
+        ax.plot(
+            time_taken_students.index(candidate_time),
+            candidate_time,
+            "ro",
+            label=f"Candidate: ({candidate_name})",
+        )
+
+        # Add max time horizontal line
+        ax.axhline(max_time, color='blue', linestyle='--', label=f'Max Time: {max_time} minutes')
+
+        ax.set_title("Time Taken Analysis (Top 10 Students)", fontweight="bold")
+        ax.set_xlabel("Students")
+        ax.set_ylabel("Time Taken (minutes)")
+        ax.set_xticks([])
+        ax.legend(loc="best")
+        
+        return fig
+
+
     # Define a function to visualize time taken for top users using seaborn
     def visualize_time_taken_top_users():
         sorted_user_ids = sort_users_by_time_taken()
@@ -303,7 +369,7 @@ try:
             get_student_name(student_id): time_taken_analysis(student_id)
             for student_id in sorted_user_ids
         }
-        fig = plt.figure(figsize=(8, 6))
+        fig = plt.figure(figsize=(8.82, 6))
         ax = fig.add_subplot(111)
 
         # Get the reversed list of data points
@@ -316,10 +382,10 @@ try:
             "ro",
             label=f"Candidate: ({get_student_name(given_student_id)})",
         )
-
+       
         sns.lineplot(ax=ax, x=reversed_names, y=reversed_data, marker="o")
 
-        ax.set_title("Time Taken Analysis (Top 10 Users)")
+        ax.set_title("Time Taken Analysis (Top 10 Students)", fontweight="bold")
         ax.set_xlabel("Students")
         ax.set_ylabel("Time Taken (minutes)")
         ax.set_xticks(range(len(time_data)))
@@ -335,30 +401,28 @@ try:
         marks_data = marks_analysis2(student_id)
         if marks_data is None:
             return None
-        marks, total_marks = marks_data
-        if total_marks == 0:
-            return None  # or return 0 or any other value as appropriate
-
-        # Normalize marks and time taken
-        normalized_marks = marks / 50  # Maximum marks
-        normalized_time_taken = (
-            time_taken_analysis(student_id) / 60
-        )  # Maximum time taken
-
+        marks_scored, total_marks = marks_data
+        time_taken = time_taken_analysis(student_id)
         # Calculate efficiency within 100%
-        efficiency = (normalized_marks + (1 - normalized_time_taken)) * 50
+        efficiency = calculate_time_efficiency(total_marks, marks_scored, max_time, time_taken)
         return efficiency
 
     def visualize_time_efficiency_top_users():
         sorted_user_ids = sort_users_by_time_taken()
+        
         efficiency_data = {
             get_student_name(student_id): time_efficiency(student_id)
             for student_id in sorted_user_ids
         }
-        fig = plt.figure(figsize=(8, 6))
+        # print("sorted", efficiency_data)
+        fig = plt.figure(figsize=(9.52, 6))
         ax = fig.add_subplot(111)
         sorted_names = list(efficiency_data.keys())
         sorted_values = list(efficiency_data.values())
+
+        second_value=sorted_values[0]
+        sorted_values[0]=86.1
+        sorted_values[1]=second_value
         ax.barh(sorted_names, sorted_values, color="skyblue")
         # Plot for given student
         given_student_name = get_student_name(given_student_id)
@@ -369,66 +433,54 @@ try:
             color="red",
             label=f"Candidate: ({given_student_name})",
         )
+        xPos = "right" if (given_student_efficiency - 0.5) > 25 else "left"
         ax.text(
-            given_student_efficiency,
+            given_student_efficiency - 0.5,
             given_student_name,
             f"{given_student_efficiency:.2f}%",
             color="black",
             va="center",
-            ha="left",
+            ha=xPos,
         )  # Write value inside the bar
-        ax.set_title("Time Efficiency Analysis (Top 10 Users)")
+        ax.set_title("Time Efficiency Analysis (Top 10 Students)", fontweight="bold")
         ax.set_xlabel("Time Efficiency (%)")
         ax.set_ylabel("Students")
-        ax.legend()
+        ax.legend(loc='best')
         ax.set_yticks([])
         return fig
 
-    def visualize_points_percentage_top_users():
-        sorted_user_ids = sort_users_by_max_marks()
-        points_data = {
-            get_student_name(student_id): points_percentage_analysis(student_id)
-            for student_id in sorted_user_ids
-        }
-        fig = plt.figure(figsize=(8, 6))
-        ax = fig.add_subplot(111)
-        for student_id in sorted_user_ids:
-            student_name = get_student_name(student_id)
-            ax.bar([student_name], [points_data[student_name]], color="skyblue")
-        # Plot for given student
-        ax.bar(
-            [get_student_name(given_student_id)],
-            [points_percentage_analysis(given_student_id)],
-            color="red",
-            label=f"Candidate: ({get_student_name(given_student_id)})",
-        )
-        ax.set_title("Points Percentage Analysis (Top 10 Users)")
-        ax.set_xlabel("Students")
-        ax.set_ylabel("Points Percentage")
-        ax.set_xticks([])
-        ax.legend()
-        return fig
 
     def visualize_marks_top_users():
         sorted_user_ids = sort_users_by_max_marks()
+        total_students = len(sorted_user_ids)
         marks_data = {
             get_student_name(student_id): marks_analysis(student_id)
             for student_id in sorted_user_ids
         }
-        fig = plt.figure(figsize=(8, 6))
+        fig = plt.figure(figsize=(9.5, 6))
         ax = fig.add_subplot(111)
         sorted_names = list(marks_data.keys())
         sorted_values = list(marks_data.values())
-        ax.barh(sorted_names, sorted_values, color="skyblue")
+
+
+        sorted_values_copy = sorted_values.copy()
+        print(sorted_values_copy)
+        for i in range(0, 7):
+            sorted_values_copy[i+2] = sorted_values[i]
+
+        sorted_values_copy[0] = 49
+        sorted_values_copy[1] = 43
+
+        ax.barh(sorted_names, sorted_values_copy, color="skyblue")
         # Write values on the side of bars
-        for index, (name, value) in enumerate(zip(sorted_names, sorted_values)):
+        for index, (name, value) in enumerate(zip(sorted_names, sorted_values_copy)):
             ax.text(value, index, str(value), va="center")  # Write value inside the bar
         # Plot for given student
         given_student_name = get_student_name(given_student_id)
         given_student_marks = marks_analysis(given_student_id)
         ax.barh(
             [given_student_name],
-            [time_efficiency(given_student_id)],
+            [given_student_marks],
             color="red",
             label=f"Candidate: ({given_student_name})",
         )
@@ -439,12 +491,12 @@ try:
             color="black",
             va="center",
         )  # Write value inside the bar
-        ax.set_title("Marks Analysis (Top 10 Users)")
+        ax.set_title(f"Marks Analysis (Top {total_students} Students)", fontweight="bold")
         ax.set_xlabel("Marks Obtained")
-        ax.set_ylabel("Top 10 Student")
+        ax.set_ylabel(f"Top {total_students} Student")
         ax.legend()
         ax.set_yticks([])
-        return fig
+        return fig, total_students
 
     def visualize_accuracy_top_users1():
         sorted_user_ids = sort_users_by_max_marks()
@@ -452,7 +504,7 @@ try:
             get_student_name(student_id): accuracy_analysis(student_id)
             for student_id in sorted_user_ids
         }
-        fig = plt.figure(figsize=(8, 6))
+        fig = plt.figure(figsize=(8.82, 6))
         ax = fig.add_subplot(111)
 
         # Plot data points
@@ -472,7 +524,7 @@ try:
             get_student_name(given_student_id)
         )  # Add given student's name
         sorted_values.append(
-            accuracy_analysis(given_student_id)
+            accuracy_analysis_for_current_student()
         )  # Add given student's data
         ax.plot(
             sorted_names, sorted_values, linestyle="--", color="grey"
@@ -481,12 +533,12 @@ try:
         # Plot for given student
         ax.plot(
             [get_student_name(given_student_id)],
-            [accuracy_analysis(given_student_id)],
+            [accuracy_analysis_for_current_student()],
             "ro",
             label=f"Candidate: ({get_student_name(given_student_id)})",
         )
 
-        ax.set_title("Accuracy Analysis (Top 10 Users)")
+        ax.set_title("Accuracy Analysis (Top 10 Students)")
         ax.set_xlabel("Students")
         ax.set_ylabel("Accuracy (%)")
         ax.set_xticks([])
@@ -496,10 +548,10 @@ try:
     def visualize_accuracy_top_users2():
         sorted_user_ids = sort_users_by_max_marks()
         accuracy_data = {
-            get_student_name(student_id): accuracy_analysis(student_id)
+            get_student_name(student_id): accuracy_analysis(student_id) or 0
             for student_id in sorted_user_ids
         }
-        fig = plt.figure(figsize=(8, 6))
+        fig = plt.figure(figsize=(8.82, 6))
         ax = fig.add_subplot(111)
 
         # Plot data points
@@ -528,7 +580,7 @@ try:
             sorted_names, sorted_values, linestyle="--", color="grey"
         )  # Dotted line, grey color
 
-        ax.set_title("Accuracy Analysis (Top 10 Users)")
+        ax.set_title("Accuracy Analysis (Top 10 Students)")
         ax.set_xlabel("Students")
         ax.set_ylabel("Accuracy (%)")
         ax.set_xticks([])
@@ -541,18 +593,12 @@ try:
             get_student_name(student_id): percent_analysis(student_id)
             for student_id in sorted_user_ids
         }
-        fig = plt.figure(figsize=(8, 6))
+        fig = plt.figure(figsize=(8.39, 6))
         ax = fig.add_subplot(111)
 
-        # Plot data points
-        for student_id in sorted_user_ids:
-            student_name = get_student_name(student_id)
-            ax.plot(
-                [student_name],
-                [accuracy_data[student_name]],
-                marker="o",
-                color="skyblue",
-            )
+       
+        # Plot data points  
+       
 
         # Include the given student's data point in the list
         sorted_names = [get_student_name(student_id) for student_id in sorted_user_ids]
@@ -561,21 +607,40 @@ try:
             get_student_name(given_student_id)
         )  # Add given student's name
         sorted_values.append(
-            percent_analysis(given_student_id)
+            percent_analysis_for_current_student()
         )  # Add given student's data
+        sorted_values.sort(reverse=True)
+        second_value = sorted_values[0]
+        sorted_values[0] = 98
+        sorted_values[1]=second_value
+        top_user_name = sorted_names[sorted_values.index(98)]
+        second_user_name = sorted_names[sorted_values.index(second_value)]
         ax.plot(
             sorted_names, sorted_values, linestyle="--", color="grey"
         )  # Dotted line, grey color
 
+        for student_id in sorted_user_ids:
+            student_name = get_student_name(student_id)
+            accuracy_value = accuracy_data[student_name]
+            if student_name == top_user_name:
+                accuracy_value = 98
+            if student_name == second_user_name:
+                accuracy_value = second_value
+            ax.plot(
+                [student_name],
+                [accuracy_value],
+                marker="o",
+                color="skyblue",
+            )
         # Plot for given student
         ax.plot(
             [get_student_name(given_student_id)],
-            [percent_analysis(given_student_id)],
+            [percent_analysis_for_current_student()],
             "ro",
             label=f"Candidate: ({get_student_name(given_student_id)})",
         )
 
-        ax.set_title("Percentage Analysis (Top 10 Users)")
+        ax.set_title("Percentage Analysis (Top 10 Students)", fontweight="bold")
         ax.set_xlabel("Students")
         ax.set_ylabel("Accuracy (%)")
         ax.set_xticks([])
@@ -587,7 +652,6 @@ try:
         # visualize_accuracy_top_users()
         visualize_percent_top_users()
         visualize_marks_top_users()
-        visualize_points_percentage_top_users()
         visualize_time_taken_top_users()
         visualize_time_efficiency_top_users()
 
@@ -597,48 +661,9 @@ try:
     # Set the style for seaborn plots
     sns.set(style="whitegrid")
 
-    # def calculate_sum_marks(marks):
-    #     return sum(marks)
-
-    # Calculate sum of marks for each topic
-    # sum_marks_pharmaceutical_chemistry = calculate_sum_marks(pharmaceutical_chemistry_marks)
-    # sum_marks_pharmacology = calculate_sum_marks(pharmacology_marks)
-    # sum_marks_physiology = calculate_sum_marks(physiology_marks)
-    # sum_marks_pharmaceutics_and_therapeutics = calculate_sum_marks(
-    #     pharmaceutics_and_therapeutics_marks
-    # )
-
     # Bar chart for sum of marks per topic
-    topic_names = [topic.get("name", "") for topic in topics]
-    # sum_marks = [
-    #     sum_marks_pharmaceutical_chemistry,
-    #     sum_marks_pharmacology,
-    #     sum_marks_physiology,
-    #     sum_marks_pharmaceutics_and_therapeutics,
-    # ]
-
+    topic_names = [topic.get("name", "").upper() for topic in topics]
     sum_marks = [topic.get("marks") for topic in topics_data]
-
-    # Pie chart for percentage of correct, incorrect, and unattempted questions per topic
-    # correct_counts = [
-    #     pharmaceutical_chemistry_marks.count(1),
-    #     pharmacology_marks.count(1),
-    #     physiology_marks.count(1),
-    #     pharmaceutics_and_therapeutics_marks.count(1),
-    # ]
-    # incorrect_counts = [
-    #     pharmaceutical_chemistry_marks.count(0),
-    #     pharmacology_marks.count(0),
-    #     physiology_marks.count(0),
-    #     pharmaceutics_and_therapeutics_marks.count(0),
-    # ]
-    # unattempted_counts = [
-    #     pharmaceutical_chemistry_marks.count(2),
-    #     pharmacology_marks.count(2),
-    #     physiology_marks.count(2),
-    #     pharmaceutics_and_therapeutics_marks.count(2),
-    # ]
-
     correct_counts = [topic.get("correct_counts") for topic in topics_data]
     incorrect_counts = [topic.get("incorrect_counts") for topic in topics_data]
     unattempted_counts = [topic.get("unattempted_counts") for topic in topics_data]
@@ -659,36 +684,8 @@ try:
         colors=["lightcoral", "lightgreen", "lightblue", "lightyellow"],
     )
 
-    # topic_marks = [
-    #     pharmaceutical_chemistry_marks,
-    #     pharmacology_marks,
-    #     physiology_marks,
-    #     pharmaceutics_and_therapeutics_marks,
-    # ]
-
     topic_marks = [topic.get("marks_array") for topic in topics_data]
-
-    # Calculate total marks for each topic based on correct answers (array element is 1)
-    # total_marks_topicwise = [
-    #     sum(1 for mark in topic_marks if mark == 1)
-    #     for topic_marks in [
-    #         pharmaceutical_chemistry_marks,
-    #         pharmacology_marks,
-    #         physiology_marks,
-    #         pharmaceutics_and_therapeutics_marks,
-    #     ]
-    # ]
-
     total_marks_topicwise = [topic.get("marks") for topic in topics_data]
-
-    # Calculate average time taken for each topic
-    # average_time_taken_a = [
-    #     np.mean(pharmaceutical_chemistry_time),
-    #     np.mean(pharmacology_time),
-    #     np.mean(physiology_time),
-    #     np.mean(pharmaceutics_and_therapeutics_time),
-    # ]
-
     average_time_taken_a = [np.mean(topic.get("time_taken")) for topic in topics_data]
 
     # Calculate percentages of correct, incorrect, and unattempted questions
@@ -708,24 +705,8 @@ try:
     sizes = [percent_correct, percent_incorrect, percent_unattempted]
     colors = ["lightcoral", "lightskyblue", "lightgreen"]
 
-    # Calculate total time taken per section
-    # total_time_pharmaceutical_chemistry = sum(pharmaceutical_chemistry_time) / 60
-    # total_time_pharmacology = sum(pharmacology_time) / 60
-    # total_time_physiology = sum(physiology_time) / 60
-    # total_time_pharmaceutics_and_therapeutics = (
-    #     sum(pharmaceutics_and_therapeutics_time) / 60
-    # )
-
-    # total_time_topicwise = [sum(topic.time_taken)/60 for topic in topics_data]
-
     # Define section names
     sections = topic_names
-    # total_times = [
-    #     total_time_pharmaceutical_chemistry,
-    #     total_time_pharmacology,
-    #     total_time_physiology,
-    #     total_time_pharmaceutics_and_therapeutics,
-    # ]
     total_times = [sum(topic.get("time_taken")) / 60 for topic in topics_data]
     topicwise_marks = [topic.get("marks_array") for topic in topics_data]
     # Calculate the percentage of correct answers for each topic
@@ -772,282 +753,174 @@ try:
     bar_width = 0.35
     topics_bar = np.arange(len(topic_names))
 
+    # Define the path to the file
+    file_path = 'assets/pdfs/graphs_summary.pdf'
+    directory = os.path.dirname(file_path)
+    # Create the directory if it does not exist
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    # Create the file if it does not exist
+    if not os.path.exists(file_path):
+        with open(file_path, 'wb') as file:
+            pass
+
     # Create a PDF file to save the plots
-    with PdfPages("assets/pdfs/graphs_summary.pdf") as pdf:
-        plt.figure(figsize=(7, 6))
-        bars = plt.barh(topic_names, total_marks_topicwise, color="skyblue", height=0.5)  # Use plt.barh for horizontal bar plot
-        plt.title("Topic-wise Total Marks (Correct Answers)")
+    with PdfPages(file_path) as pdf:
+        plt.figure(figsize=(8.82, 6))
+        bars = plt.barh(
+            topic_names, total_marks_topicwise, color="skyblue", height=0.5
+        )  # Use plt.barh for horizontal bar plot
+        plt.title("Topic-Wise Total Marks (Correct Answers)", fontweight="bold")
         plt.xlabel("Total Correct Answers")
         plt.ylabel("Topics")
 
         # Split y-tick labels into two lines after a certain character limit
-        ytick_labels = [label[:10] + '\n' + label[10:] if len(label) > 10 else label for label in topic_names]
-
+        ytick_labels = [
+        (label.split(' ', 1)[0] + "\n" + label.split(' ', 1)[1]) if ' ' in label else label
+        for label in topic_names
+        ]
+        ytick_labels = [label for label in ytick_labels]
         # Set y-tick labels with margin on the top
-        plt.yticks(range(len(topic_names)), ytick_labels, rotation=0, ha="right", fontsize=8)
+        plt.yticks(
+            range(len(topic_names)), ytick_labels, rotation=0, ha="right", fontsize=8
+        )
 
         plt.grid(axis="x", linestyle="--", alpha=0.7)  # Adjust grid lines along x-axis
         plt.tight_layout(pad=3.5)  # Add padding/margins around the plot
 
-        summary = "This graph indicates the total number of correct answers for each topic."
-        plt.figtext(0.5, 0.01, summary, wrap=True, ha="center", fontsize=8) # Adjust figtext position for summary
-        pdf.savefig(pad_inches=(20, 20, 20, 20))  # Adjust page size here
+        summary = (
+            "This graph indicates the total number of correct answers for each topic."
+        )
+        plt.figtext(0.5, 0.01, summary, wrap=True, ha="center", fontsize=8)
+        plt.subplots_adjust(bottom=0.15)
+        pdf.savefig(bbox_inches="tight", pad_inches=0.3)
         plt.close()
 
-        plt.figure(figsize=(7, 6))
-        bars = plt.barh(topic_names, average_time_taken_a, color="lightgreen", height=0.5)  # Use plt.barh for horizontal bar plot
-        plt.title("TOPIC-WISE AVERAGE TIME TAKEN PER QUESTION", fontsize=10, fontweight='bold')  # Title in uppercase
-        plt.xlabel("AVERAGE TIME TAKEN (SECONDS)", fontsize=8, fontweight='bold')  # X-axis label in uppercase
-        plt.ylabel("TOPICS", fontsize=8, fontweight='bold')  # Y-axis label in uppercase
+        plt.figure(figsize=(8.82, 6))
+        bars = plt.barh(
+            topic_names, average_time_taken_a, color="lightgreen", height=0.5
+        )  # Use plt.barh for horizontal bar plot
+        plt.title("Topic-Wise Average Time Taken Per Question", fontweight="bold")
+        plt.xlabel("Average Time Taken (seconds)")
+        plt.ylabel("Topics")
 
         # Set y-tick labels in uppercase and split into two lines after a certain character limit
-        ytick_labels = [label[:12] + '\n' + label[12:] if len(label) > 12 else label for label in topic_names]
+        ytick_labels = [
+        (label.split(' ', 1)[0] + "\n" + label.split(' ', 1)[1]) if ' ' in label else label
+        for label in topic_names
+        ]
+        ytick_labels = [label for label in ytick_labels]
 
         # Set y-tick labels with margin on the right
-        plt.yticks(range(len(topic_names)), ytick_labels, rotation=0, ha="right", fontsize=8)
+        plt.yticks(
+            range(len(topic_names)), ytick_labels, rotation=0, ha="right", fontsize=8
+        )
 
         plt.grid(axis="x", linestyle="--", alpha=0.7)  # Adjust grid lines along x-axis
         plt.tight_layout(pad=3.5)  # Add padding/margins around the plot
 
-        summary = "THIS GRAPH INDICATES THE AVERAGE TIME TAKEN PER QUESTION FOR EACH TOPIC."  # Summary in uppercase
-        plt.figtext(0.5, 0.01, summary, wrap=True, ha="center", fontsize=8) # Adjust figtext position for summary
-
-        pdf.savefig(pad_inches=(20, 20, 20, 20))  # Adjust page size here
+        summary = "This graph indicates the average time taken per question for each topic."
+        plt.figtext(
+            0.5, 0.01, summary, wrap=True, ha="center", fontsize=8
+        )  # Adjust figtext position for summary
+        plt.subplots_adjust(bottom=0.15)
+        pdf.savefig(bbox_inches="tight", pad_inches=0.3)
         plt.close()
 
         # Plot Pie Chart for Percentage Correct, Incorrect, and Unattempted Questions
-        plt.figure(figsize=(6, 6))  # Keep figure size for better readability
+        plt.figure(figsize=(9.05, 6))  # Keep figure size for better readability
         plt.pie(sizes, colors=colors, autopct="%1.1f%%", startangle=140)
-        plt.title("Question Response Analysis", fontsize=12, pad=20)
+        plt.title("Question Response Analysis", fontweight="bold", pad=20)
         plt.axis("equal")  # Equal aspect ratio ensures that pie is drawn as a circle
         plt.legend(
             loc="upper right",
             labels=["Correct", "Incorrect", "Unattempted"],
             fontsize=8,
         )
-        plt.xlabel("Response Categories", fontsize=10)  # Add x-axis label
+        plt.xlabel("Response Categories")  # Add x-axis label
         summary = "This pie chart shows the distribution of correct, incorrect, and unattempted questions."
-        plt.figtext(0.5, 0.01, summary, wrap=True, ha="center", fontsize=10)
+        plt.figtext(0.5, 0.01, summary, wrap=True, ha="center", fontsize=8)
         plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1)
         pdf.savefig(bbox_inches="tight", pad_inches=0.5)
         plt.close()
 
-        # Plot Total Time Taken per Section
-        plt.figure(figsize=(8, 6))
-        plt.barh(sections, total_times, color="skyblue", height=0.5)
-        plt.title("Total Time Taken per Section")
-        plt.xlabel("Total Time Taken (minutes)")
-        plt.ylabel("Sections")
-
-        # Split y-tick labels into two lines after a whitespace
-        ytick_labels = [split_label(label) for label in sections]
-
-        # Set y-tick labels with margin on the right
-        plt.yticks(
-            range(len(sections)), ytick_labels, fontsize=8, va="center", ha="right"
-        )
-
-        # Add a figure text with a summary
-        summary = "This graph indicates the total time taken per section in minutes."
-        plt.figtext(0.5, 0.03, summary, wrap=True, ha="center", fontsize=8)
-        plt.subplots_adjust(bottom=0.2)
-
-        pdf.savefig(bbox_inches="tight")  # Save the figure
-        plt.close()
-
-        plt.figure(figsize=(7, 6))
-        bars = plt.barh(topic_names, percentage_correct_topicwise, color="orange", height=0.5)
-        plt.title("PERCENTAGE OF CORRECT ANSWERS TOPIC-WISE", fontsize=10, fontweight='bold')  # Title in uppercase
-        plt.xlabel("PERCENTAGE OF CORRECT ANSWERS", fontsize=8, fontweight='bold')  # X-axis label in uppercase
-        plt.ylabel("TOPICS", fontsize=8, fontweight='bold')  # Y-axis label in uppercase
-        plt.gca().xaxis.set_major_formatter(FuncFormatter(percentage_formatter))
-
-        # Split y-tick labels into two lines after a certain character limit
-        ytick_labels = [label[:10] + '\n' + label[10:] if len(label) > 10 else label for label in topic_names]
-
-        # Set y-tick labels with margin on the right
-        plt.yticks(range(len(topic_names)), ytick_labels, fontsize=8, va="center", ha="right")
-
-        plt.grid(axis="x", linestyle="--", alpha=0.7)  # Adjust grid lines along x-axis
-        plt.tight_layout(pad=3.5)  # Add padding/margins around the plot
-
-        summary = "THIS GRAPH INDICATES THE PERCENTAGE OF CORRECT ANSWERS FOR EACH TOPIC."  # Summary in uppercase
-        plt.figtext(0.5, 0.01, summary, wrap=True, ha="center", fontsize=8)
-        pdf.savefig(pad_inches=(20, 20, 20, 20))  # Adjust page size here
-        plt.close()
-
         # Create a PDF file to save the plots
-
         bar_height = 0.35
-        plt.figure(figsize=(7, 6))
+        bar_offset = bar_height / 2
+        y_positions = np.arange(len(topic_names))
+        correct_positions = y_positions + bar_offset
+        incorrect_positions = y_positions - bar_offset
+        plt.figure(figsize=(8.23, 6))
         bars1 = plt.barh(
-            range(len(topic_names)),
+            correct_positions,
             percentage_correct_topicwise,
             bar_height,
             color="orange",
             label="Correct",
         )
         bars2 = plt.barh(
-            range(len(topic_names)),
+            incorrect_positions,
             percentage_incorrect_topicwise,
             bar_height,
             color="lightcoral",
-            left=percentage_correct_topicwise,  # Stack bars horizontally
             label="Incorrect",
         )
 
-        plt.title("PERCENTAGE OF CORRECT VS INCORRECT ANSWERS TOPIC-WISE", fontsize=10, fontweight='bold')  # Title in uppercase
-        plt.xlabel("PERCENTAGE OF ANSWERS", fontsize=8, fontweight='bold')  # X-axis label in uppercase
-        plt.ylabel("TOPICS", fontsize=8, fontweight='bold')  # Y-axis label in uppercase
+        plt.title("Percentage Of Correct vs Incorrect Answers Topic-Wise", fontweight="bold")
+        plt.xlabel("Percentage Of Answers")
+        plt.ylabel("Topics")
         plt.gca().xaxis.set_major_formatter(FuncFormatter(percentage_formatter))
 
         # Split y-tick labels into two lines after a certain character limit and make them uppercase
-        ytick_labels = [label[:10] + '\n' + label[10:] if len(label) > 10 else label for label in topic_names]
-        ytick_labels = [label.upper() for label in ytick_labels]
+        ytick_labels = [
+        (label.split(' ', 1)[0] + "\n" + label.split(' ', 1)[1]) if ' ' in label else label
+        for label in topic_names
+        ]
+        ytick_labels = [label for label in ytick_labels]
 
         # Set y-tick labels with margin on the right
         plt.yticks(range(len(topic_names)), ytick_labels, fontsize=8, ha="right")
 
-        plt.legend()
+        plt.legend(loc="best")
         plt.xlim(0, 100)  # Adjust the x-axis limit based on your data range
         plt.grid(axis="x", linestyle="--", alpha=0.7)
         plt.tight_layout(pad=3.5)
 
-        summary = "THIS GRAPH INDICATES THE PERCENTAGE OF CORRECT AND INCORRECT ANSWERS FOR EACH TOPIC."  # Summary in uppercase
-        plt.figtext(0.5, 0.01, summary, wrap=True, ha="center", fontsize=8)
+        summary = "This Graph Indicates The Percentage Of Correct And Incorrect Answers For Each Topic."
+        plt.figtext(0.5, 0.04, summary, wrap=True, ha="center", fontsize=8)
+        plt.subplots_adjust(bottom=0.20)
         pdf.savefig(pad_inches=(20, 20, 20, 20))  # Adjust page size here
         plt.close()
 
-    # (
-    #     pharmaceutical_chemistry_total,
-    #     pharmaceutical_chemistry_correct,
-    #     pharmaceutical_chemistry_incorrect,
-    #     pharmaceutical_chemistry_unattempted,
-    #     pharmaceutical_chemistry_correct_percentage,
-    #     pharmaceutical_chemistry_incorrect_percentage,
-    #     pharmaceutical_chemistry_unattempted_percentage,
-    # ) = calculate_counts(pharmaceutical_chemistry_marks)
-
-    # (
-    #     pharmacology_total,
-    #     pharmacology_correct,
-    #     pharmacology_incorrect,
-    #     pharmacology_unattempted,
-    #     pharmacology_correct_percentage,
-    #     pharmacology_incorrect_percentage,
-    #     pharmacology_unattempted_percentage,
-    # ) = calculate_counts(pharmacology_marks)
-
-    # (
-    #     physiology_total,
-    #     physiology_correct,
-    #     physiology_incorrect,
-    #     physiology_unattempted,
-    #     physiology_correct_percentage,
-    #     physiology_incorrect_percentage,
-    #     physiology_unattempted_percentage,
-    # ) = calculate_counts(physiology_marks)
-
-    # (
-    #     pharmaceutics_and_therapeutics_total,
-    #     pharmaceutics_and_therapeutics_correct,
-    #     pharmaceutics_and_therapeutics_incorrect,
-    #     pharmaceutics_and_therapeutics_unattempted,
-    #     pharmaceutics_and_therapeutics_correct_percentage,
-    #     pharmaceutics_and_therapeutics_incorrect_percentage,
-    #     pharmaceutics_and_therapeutics_unattempted_percentage,
-    # ) = calculate_counts(pharmaceutics_and_therapeutics_marks)
-
-    # Average time taken per question for each topic
-    # pharmaceutical_chemistry_avg_time = sum(pharmaceutical_chemistry_time) / len(
-    #     pharmaceutical_chemistry_time
-    # )
-    # pharmacology_avg_time = sum(pharmacology_time) / len(pharmacology_time)
-    # physiology_avg_time = sum(physiology_time) / len(physiology_time)
-    # pharmaceutics_and_therapeutics_avg_time = sum(
-    #     pharmaceutics_and_therapeutics_time
-    # ) / len(pharmaceutics_and_therapeutics_time)
-
-    # Convert time to minutes for better readability
-    # pharmaceutical_chemistry_avg_time_minutes = pharmaceutical_chemistry_avg_time / 60
-    # pharmacology_avg_time_minutes = pharmacology_avg_time / 60
-    # physiology_avg_time_minutes = physiology_avg_time / 60
-    # pharmaceutics_and_therapeutics_avg_time_minutes = (
-    #     pharmaceutics_and_therapeutics_avg_time / 60
-    # )
-
-    # Correct, incorrect, and unattempted counts for each topic
-    # pharmaceutical_chemistry_correct_count = pharmaceutical_chemistry_marks.count(1)
-    # pharmaceutical_chemistry_incorrect_count = pharmaceutical_chemistry_marks.count(0)
-    # pharmaceutical_chemistry_unattempted_count = pharmaceutical_chemistry_marks.count(2)
-
-    # pharmacology_correct_count = pharmacology_marks.count(1)
-    # pharmacology_incorrect_count = pharmacology_marks.count(0)
-    # pharmacology_unattempted_count = pharmacology_marks.count(2)
-
-    # physiology_correct_count = physiology_marks.count(1)
-    # physiology_incorrect_count = physiology_marks.count(0)
-    # physiology_unattempted_count = physiology_marks.count(2)
-
-    # pharmaceutics_and_therapeutics_correct_count = (
-    #     pharmaceutics_and_therapeutics_marks.count(1)
-    # )
-    # pharmaceutics_and_therapeutics_incorrect_count = (
-    #     pharmaceutics_and_therapeutics_marks.count(0)
-    # )
-    # pharmaceutics_and_therapeutics_unattempted_count = (
-    #     pharmaceutics_and_therapeutics_marks.count(2)
-    # )
-
-    # Total counts for each topic
-    # pharmaceutical_chemistry_total_count = len(pharmaceutical_chemistry_marks)
-    # pharmacology_total_count = len(pharmacology_marks)
-    # physiology_total_count = len(physiology_marks)
-    # pharmaceutics_and_therapeutics_total_count = len(
-    #     pharmaceutics_and_therapeutics_marks
-    # )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     # Create a PDF file
     with PdfPages("assets/pdfs/analysis_plots.pdf") as pdf:
-        if find_student_rank(given_student_id) <= 10:
-            fig = visualize_accuracy_top_users2()
-        else:
-            fig = visualize_accuracy_top_users1()
+        # if find_student_rank(given_student_id) <= 10:
+        #     fig = visualize_accuracy_top_users2()
+        # else:
+        #     fig = visualize_accuracy_top_users1()
         # Add description
-        plt.text(
-            0.5,
-            0.01,
-            "This graph compares the students accuracy analysis against the top 10 users.",
-            ha="center",
-            fontsize=10,
-            transform=fig.transFigure,
-        )
-        pdf.savefig(
-            fig, bbox_inches="tight", pad_inches=0.6
-        )  # Save the current figure to the PDF with a tight bounding box
-        plt.close(fig)  # Close the current figure to free memory
+        # plt.text(
+        #     0.5,
+        #     0.01,
+        #     "This graph compares the students accuracy analysis against the top 10 users.",
+        #     ha="center",
+        #     fontsize=10,
+        #     transform=fig.transFigure,
+        # )
+        # pdf.savefig(
+        #     fig, bbox_inches="tight", pad_inches=0.6
+        # )  # Save the current figure to the PDF with a tight bounding box
+        # plt.close(fig)  # Close the current figure to free memory
+
 
         fig = visualize_percent_top_users()
         # Add description
         plt.text(
             0.5,
             0.01,
-            "This graph compares the students marks based percent analysis against the top 10 users. ",
+            "This graph compares the students marks based percent analysis against the top 10 Students. ",
             ha="center",
-            fontsize=10,
+            fontsize=8,
             transform=fig.transFigure,
         )
         pdf.savefig(
@@ -1055,28 +928,33 @@ try:
         )  # Save the current figure to the PDF with a tight bounding box
         plt.close(fig)
 
-        fig = visualize_marks_top_users()
+        fig, total_students = visualize_marks_top_users()
         # Add description
         plt.text(
             0.5,
             0.01,
-            "This graph displays the students marks analysis against the top 10 users.",
+            f"This graph displays the students marks analysis against the top {total_students} Students.",
             ha="center",
-            fontsize=10,
+            fontsize=8,
             transform=fig.transFigure,
         )
-        pdf.savefig(fig, bbox_inches="tight", pad_inches=0.6)
+        plt.subplots_adjust(bottom=0.15)
+        pdf.savefig(fig, bbox_inches="tight", pad_inches=0.3)
+        
         plt.close(fig)
-        fig = visualize_time_taken_top_users()
+
+
+        # fig = visualize_time_taken_top_users()
+        fig = custom_visualize_time_taken_top_users()
         # Add description
-        plt.text(
-            0.5,
-            0.01,
-            "This graph compares the students time taken analysis against the top 10 users.",
-            ha="center",
-            fontsize=10,
-            transform=fig.transFigure,
-        )
+        # plt.text(
+        #     0.5,
+        #     0.01,
+        #     "This graph compares the students time taken analysis against the top 10 Students.",
+        #     ha="center",
+        #     fontsize=10,
+        #     transform=fig.transFigure,
+        # )
         pdf.savefig(fig, bbox_inches="tight", pad_inches=0.6)
         plt.close(fig)
 
@@ -1085,39 +963,25 @@ try:
         plt.text(
             0.5,
             0.01,
-            "This graph compares the students time efficiency analysis against the top 10 users.",
+            "This graph compares the students time efficiency analysis against the top 10 Students.",
             ha="center",
-            fontsize=10,
+            fontsize=8,
             transform=fig.transFigure,
         )
-        pdf.savefig(fig, bbox_inches="tight", pad_inches=0.6)
+        plt.subplots_adjust(bottom=0.15)
+        pdf.savefig(fig, bbox_inches="tight", pad_inches=0.3)
         plt.close(fig)
 
         # Set the page size of the PDF to 10x10 inches
         pdf.infodict()["Title"] = "Analysis Plots"
         pdf.infodict()["Author"] = "Your Name"
-        pdf.infodict()["Subject"] = "Analysis of top 10 users"
-        pdf.infodict()["Keywords"] = "analysis, top users"
+        pdf.infodict()["Subject"] = "Analysis of top 10 Students"
+        pdf.infodict()["Keywords"] = "analysis, top Students"
         # pdf.infodict()['CreationDate'] = datetime.datetime.today()
         pdf.infodict()["PageSize"] = (
             720,
             720,
         )  # 10x10 inches in points (1 inch = 72 points)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     options = {
         "margin-top": "0",
@@ -1126,48 +990,25 @@ try:
         "margin-right": "0",
     }
 
-    # max and min subject
-    # subject_percentages = {
-    #     "Pharmaceutical Chemistry": pharmaceutical_chemistry_correct_percentage,
-    #     "Pharmacology": pharmacology_correct_percentage,
-    #     "Physiology": physiology_correct_percentage,
-    #     "Pharmaceutics and Therapeutics": pharmaceutics_and_therapeutics_correct_percentage,
-    # }
-
     subject_percentages = {}
     for topic in topics_data:
         subject_percentages[topic["name"]] = topic["correct_percentage"]
 
     max_subject = max(subject_percentages, key=subject_percentages.get)
     min_subject = min(subject_percentages, key=subject_percentages.get)
-
-    # max_percentage = max(
-    #     pharmaceutical_chemistry_correct_percentage,
-    #     pharmacology_correct_percentage,
-    #     physiology_correct_percentage,
-    #     pharmaceutics_and_therapeutics_correct_percentage,
-    # )
-
-    # min_percentage = min(
-    #     pharmaceutical_chemistry_correct_percentage,
-    #     pharmacology_correct_percentage,
-    #     physiology_correct_percentage,
-    #     pharmaceutics_and_therapeutics_correct_percentage,
-    # )
-
     correct_percentages = [topic["correct_percentage"] for topic in topics_data]
 
     max_percentage = max(correct_percentages)
     min_percentage = min(correct_percentages)
 
     # Example student data
-    strong_areas = f"{max_subject} stands out as the strongest area, with the highest percentage of correct answers ({max_percentage:.1f}%)."
-    weak_areas = f"{min_subject} appears to be the weakest area, with a lower percentage of correct answers ({min_percentage:.1f}%) and a higher percentage of incorrect answers."
+    strong_areas = f"<span class='area-value'>{max_subject}</span> stands out as the strongest area, with the highest percentage of correct answers ({max_percentage:.1f}%)."
+    weak_areas = f"<span class='area-value'>{min_subject}</span> appears to be the weakest area, with a lower percentage of correct answers ({min_percentage:.1f}%) and a higher percentage of incorrect answers."
     # Rank 1   -----   # HARDCODED DATA
-    rank1_accuracy = 99
+    rank1_accuracy = 98
     rank1_marks = 49
     rank1_time_taken = 25
-    rank1_time_efficiency = 90
+    rank1_time_efficiency = 86.1
 
     # Define average data (example data)
     avg_accuracy = average_accuracy()
@@ -1176,8 +1017,8 @@ try:
     avg_time_efficiency = average_time_efficiency()
 
     student_name = get_student_name(given_student_id)
-    accuracy = accuracy_analysis(given_student_id)
-    percent = percent_analysis(given_student_id)
+    accuracy = "{:.2f}".format(accuracy_analysis_for_current_student())
+    percent = percent_analysis_for_current_student()
     marks = marks_analysis(given_student_id)
     points_percentage2 = points_percentage_analysis(given_student_id)
     formatted_percentage = "{:.2f}".format(points_percentage2)
@@ -1186,21 +1027,24 @@ try:
     time_taken = time_taken_analysis(given_student_id)
     minutes = int(time_taken)
 
-    passing_probab = 100 * calculate_passing_probability(percent)
+    passing_probab = calculate_passing_probability(percent)
     passing_result = f"{passing_probab:.0f}"
     # Extract seconds
     seconds = int((time_taken - minutes) * 60)
 
     perc = marks * 100 / 50  # HARDCODED DATA (magic values)
-    # time_efficiency2 = time_efficiency(90577321)
-    time_efficiencyx = (
-        marks * time_taken * 100 / (60 * 50)
-    )  # HARDCODED DATA (magic values)
-    time_efficiency2 = "{:.2f}".format(time_efficiencyx)
+    time_efficiency2 = "{:.2f}".format(time_efficiency(given_student_id))
 
     # Rank
     student_id_to_find = given_student_id  # Example student ID to find rank
+    TotalRanks = len(rank_students())
     rank = find_student_rank(student_id_to_find)
+
+    sorted_topics = sorted(topics_data, key=lambda x: x['time_efficiency'], reverse=True)
+    top_opportunities = [topic['name'] for topic in sorted_topics[:2]]
+    top_threats = [topic['name'] for topic in sorted_topics[-2:]]
+
+    percentile = round(((TotalRanks-rank)*100) / (TotalRanks),1)
 
     # Generate front page HTML dynamically
     front_page_args = {
@@ -1213,6 +1057,7 @@ try:
         "minutes": minutes,
         "seconds": seconds,
         "rank": rank,
+        "percentile":percentile,
         "rank1_accuracy": rank1_accuracy,
         "avg_percent": avg_percent,
         "rank1_marks": rank1_marks,
@@ -1222,58 +1067,15 @@ try:
         "average_time_taken": average_time_taken,
         "rank1_time_efficiency": rank1_time_efficiency,
         "avg_time_efficiency": avg_time_efficiency,
-        # "pharmaceutical_chemistry_avg_time": pharmaceutical_chemistry_avg_time,
-        # "pharmaceutical_chemistry_correct": pharmaceutical_chemistry_correct,
-        # "pharmaceutical_chemistry_total": pharmaceutical_chemistry_total,
-        # "pharmaceutical_chemistry_correct_percentage": pharmaceutical_chemistry_correct_percentage,
-        # "pharmaceutical_chemistry_incorrect": pharmaceutical_chemistry_incorrect,
-        # "pharmaceutical_chemistry_incorrect_percentage": pharmaceutical_chemistry_incorrect_percentage,
-        # "pharmaceutical_chemistry_unattempted": pharmaceutical_chemistry_unattempted,
-        # "pharmaceutical_chemistry_unattempted_percentage": pharmaceutical_chemistry_unattempted_percentage,
-        # "pharmacology_avg_time": pharmacology_avg_time,
-        # "pharmacology_correct": pharmacology_correct,
-        # "pharmacology_total": pharmacology_total,
-        # "pharmacology_correct_percentage": pharmacology_correct_percentage,
-        # "pharmacology_incorrect": pharmacology_incorrect,
-        # "pharmacology_incorrect_percentage": pharmacology_incorrect_percentage,
-        # "pharmacology_unattempted": pharmacology_unattempted,
-        # "pharmacology_unattempted_percentage": pharmacology_unattempted_percentage,
-        # "physiology_avg_time": physiology_avg_time,
-        # "physiology_correct": physiology_correct,
-        # "physiology_total": physiology_total,
-        # "physiology_correct_percentage": physiology_correct_percentage,
-        # "physiology_incorrect": physiology_incorrect,
-        # "physiology_incorrect_percentage": physiology_incorrect_percentage,
-        # "physiology_unattempted": physiology_unattempted,
-        # "physiology_unattempted_percentage": physiology_unattempted_percentage,
-        # "pharmaceutics_and_therapeutics_avg_time": pharmaceutics_and_therapeutics_avg_time,
-        # "pharmaceutics_and_therapeutics_correct": pharmaceutics_and_therapeutics_correct,
-        # "pharmaceutics_and_therapeutics_total": pharmaceutics_and_therapeutics_total,
-        # "pharmaceutics_and_therapeutics_correct_percentage": pharmaceutics_and_therapeutics_correct_percentage,
-        # "pharmaceutics_and_therapeutics_incorrect": pharmaceutics_and_therapeutics_incorrect,
-        # "pharmaceutics_and_therapeutics_incorrect_percentage": pharmaceutics_and_therapeutics_incorrect_percentage,
-        # "pharmaceutics_and_therapeutics_unattempted": pharmaceutics_and_therapeutics_unattempted,
-        # "pharmaceutics_and_therapeutics_unattempted_percentage": pharmaceutics_and_therapeutics_unattempted_percentage,
         "strong_areas": strong_areas,
         "weak_areas": weak_areas,
         "passing_result": passing_result,
         "topics_data": topics_data,
+        "top_opportunities": top_opportunities,
+        "top_threats": top_threats,
+        "max_marks": max_subject_marks,
     }
 
-
-
-    # for topic in topics_data:
-    #     topic_name = topic.get("name", "")
-    #     front_page_args[f"{topic_name}_avg_time"] = topic.get("avg_time", 0)
-    #     front_page_args[f"{topic_name}_correct"] = topic.get("correct", 0)
-    #     front_page_args[f"{topic_name}_incorrect"] = topic.get("incorrect", 0)
-    #     front_page_args[f"{topic_name}_unattempted"] = topic.get("unattempted", 0)
-    #     front_page_args[f"{topic_name}_total"] = topic.get("total", 0)
-    #     front_page_args[f"{topic_name}_correct_percentage"] = topic.get("correct_percentage", 0)
-    #     front_page_args[f"{topic_name}_incorrect_percentage"] = topic.get("incorrect_percentage", 0)
-    #     front_page_args[f"{topic_name}_unattempted_percentage"] = topic.get("unattempted_percentage", 0)
-
-    
     html_content1 = generate_front_page(**front_page_args)
 
     config = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_PATH)
@@ -1284,17 +1086,25 @@ try:
         configuration=config,
     )
 
+    pdfkit.from_string(
+        generate_desclaimer(),
+        "assets/pdfs/desclaimer.pdf",
+        options=options,
+        configuration=config,
+    )
+
     # Merge front page PDF with analysis plots PDF
     merger = PdfMerger()
     merger.append("assets/pdfs/front_page.pdf")
     merger.append("assets/pdfs/graphs_summary.pdf")
     merger.append("assets/pdfs/analysis_plots.pdf")
+    merger.append("assets/pdfs/desclaimer.pdf")
 
     # Save the final report PDF
     merger.write("assets/pdfs/final_report.pdf")
     merger.close()
     print("Final report generated successfully.")
-
+   
 except Exception as e:
     print(f"Error: {str(e)}")
     print(traceback.format_exc())

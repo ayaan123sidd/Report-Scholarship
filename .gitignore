@@ -5,6 +5,10 @@ node_modules/
 # Environments
 .env
 
+*.pyc
+
+src/assets/
+
 # Miscellaneous
 *.pyc
 *.pyo
