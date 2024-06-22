@@ -89,7 +89,7 @@ def calculate_time_efficiency(max_marks, marks_scored, max_time, time_taken):
         efficiency = 0
     else:
         efficiency = (
-            marks_scored / max_marks * 0.7 + (1 - time_taken / max_time) * 0.3
+            marks_scored / max_marks * 0.7 + (1 - min(time_taken, max_time) / max_time) * 0.3
         ) * 100
     return round(efficiency)
 
