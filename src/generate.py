@@ -79,7 +79,7 @@ try:
     topics_data = []
     for topic in topics:
         topic_name = topic["name"]
-        topic_questions = int(topic["total_questions"] or 0)
+        topic_questions = scholarship_data.get("per_topic_questions", 15) if scholarship == "amcmock" else int(topic["total_questions"] or 5)
         topic_marks = marks_array[
             topic_question_idx : topic_question_idx + topic_questions
         ]

@@ -2,7 +2,7 @@ import random
 
 LMS_API_HEADERS = {"apiKey": "62fd09ca0e4bda109687a49faee18bcd", "ORGID": "5735"}
 
-WKHTMLTOPDF_PATH = "C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe" # "C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe" # FOR MAC - "/usr/local/bin/wkhtmltopdf"    # FOR WINDOWS - "C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe"
+WKHTMLTOPDF_PATH = "/usr/local/bin/wkhtmltopdf" # FOR MAC - "/usr/local/bin/wkhtmltopdf"    # FOR WINDOWS - "C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe"
 
 CUSTOM_TOP_10_STUDENTS_TIME_TAKEN = [random.randint(40, 50) for _ in list(range(1, 11))]
 
@@ -368,49 +368,50 @@ QUALIFICATION_DATA = {
                 "test_id": 119729,
                 "total_questions": 150,
                 "total_marks": 150,
-                "max_time": 210
+                "max_time": 210,
+                "per_topic_questions": 15,
             }
         },
         "topics": [
             {
                 "name": "CVS",
-                "total_questions": "15"
+                "total_questions": "5"
             },
             {
                 "name": "Mental Health",
-                "total_questions": "15"
+                "total_questions": "5"
             },
             {
                 "name": "Women Health",
-                "total_questions": "15"
+                "total_questions": "5"
             },
             {
                 "name": "Respiratory",
-                "total_questions": "15"
+                "total_questions": "5"
             },
             {
                 "name": "Hematology",
-                "total_questions": "15"
+                "total_questions": "5"
             },
             {
                 "name": "Dermatology",
-                "total_questions": "15"
+                "total_questions": "5"
             },
             {
                 "name": "Urology",
-                "total_questions": "15"
+                "total_questions": "5"
             },
             {
                 "name": "Infectious Disease",
-                "total_questions": "15"
+                "total_questions": "5"
             },
             {
                 "name": "Breast and Endocrine System",
-                "total_questions": "15"
+                "total_questions": "5"
             },
             {
                 "name": "ENT and Ophthalmology",
-                "total_questions": "15"
+                "total_questions": "5"
             }
         ],
     },
